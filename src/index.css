@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+	--background: 30 33% 98%;
+	--foreground: 230 16% 12%;
+	--card: 0 0% 100%;
+	--card-foreground: 230 16% 12%;
+	--popover: 0 0% 100%;
+	--popover-foreground: 230 16% 12%;
+	--primary: 222 89% 52%;
+	--primary-foreground: 210 40% 98%;
+	--secondary: 210 40% 96%;
+	--secondary-foreground: 230 16% 12%;
+	--muted: 210 40% 96%;
+	--muted-foreground: 215 16% 46%;
+	--accent: 33 95% 55%;
+	--accent-foreground: 230 16% 12%;
+	--destructive: 0 85% 60%;
+	--destructive-foreground: 210 40% 98%;
+	--border: 220 13% 91%;
+	--input: 220 13% 91%;
+	--ring: 222 89% 52%;
+	--radius: 1rem;
+}
+
+.dark {
+	--background: 230 18% 8%;
+	--foreground: 210 40% 98%;
+	--card: 230 18% 10%;
+	--card-foreground: 210 40% 98%;
+	--popover: 230 18% 10%;
+	--popover-foreground: 210 40% 98%;
+	--primary: 222 89% 62%;
+	--primary-foreground: 230 18% 8%;
+	--secondary: 230 14% 16%;
+	--secondary-foreground: 210 40% 98%;
+	--muted: 230 14% 16%;
+	--muted-foreground: 215 20% 70%;
+	--accent: 33 95% 55%;
+	--accent-foreground: 230 18% 8%;
+	--destructive: 0 75% 60%;
+	--destructive-foreground: 210 40% 98%;
+	--border: 230 14% 18%;
+	--input: 230 14% 18%;
+	--ring: 222 89% 62%;
+}
+
+* {
+	@apply border-border;
+}
+
+body {
+	@apply bg-background text-foreground font-sans;
+}
+
+h1,
+h2,
+h3,
+h4 {
+	@apply font-display tracking-tight;
+}
+
+::selection {
+	background: hsl(var(--accent));
+	color: hsl(var(--accent-foreground));
+}
+
+.hero-grid {
+	background-image:
+		radial-gradient(
+			circle at 10% 20%,
+			rgba(255, 190, 11, 0.15),
+			transparent 40%
+		),
+		radial-gradient(circle at 90% 10%, rgba(58, 134, 255, 0.2), transparent 35%);
+}
+
+.glass-card {
+	background: linear-gradient(
+		140deg,
+		rgba(255, 255, 255, 0.7),
+		rgba(255, 255, 255, 0.4)
+	);
+	backdrop-filter: blur(10px);
+}
+
+.dark .glass-card {
+	background: linear-gradient(
+		140deg,
+		rgba(15, 23, 42, 0.7),
+		rgba(30, 41, 59, 0.4)
+	);
+}
