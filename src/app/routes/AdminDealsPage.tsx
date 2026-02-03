@@ -24,6 +24,8 @@ import {
 } from "../../components/ui/dialog";
 import { EmptyState } from "../../components/feedback/EmptyState";
 import { useT } from "../../i18n";
+import { useLocaleStore } from "../store/useLocaleStore";
+import { getDealTitle } from "../../utils/dealText";
 
 const emptyDeal: Deal = {
   id: "",
@@ -49,6 +51,7 @@ export function AdminDealsPage() {
   const [draft, setDraft] = useState<Deal>(emptyDeal);
   const isEditing = deals.some((deal) => deal.id === draft.id);
   const t = useT();
+  const locale = useLocaleStore((state) => state.locale);
 
   const fetchDeals = async () => {
     setLoading(true);
@@ -132,7 +135,7 @@ export function AdminDealsPage() {
             <Card key={deal.id}>
               <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <p className="text-sm font-semibold">{deal.title}</p>
+                  <p className="text-sm font-semibold">{getDealTitle(deal, locale)}</p>
                   <p className="text-xs text-muted-foreground">
                     {deal.brand} · {t(categoryLabelKeys[deal.category])} ·{" "}
                     {t("label.expiresAt", { date: deal.expiresAt })}

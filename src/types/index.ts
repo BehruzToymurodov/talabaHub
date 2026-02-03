@@ -38,6 +38,11 @@ export type Deal = {
   brand: string;
   category: DealCategory;
   title: string;
+  titleI18n?: {
+    uz: string;
+    ru: string;
+    en: string;
+  };
   description: string;
   terms: string;
   code: string;

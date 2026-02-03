@@ -6,6 +6,8 @@ import { useT } from "../../../i18n";
 import { categoryLabelKeys } from "../../../features/deals/constants";
 import { formatDate } from "../../../utils/date";
 import { resolveAssetPath } from "../../../utils/assets";
+import { useLocaleStore } from "../../../app/store/useLocaleStore";
+import { getDealTitle } from "../../../utils/dealText";
 
 type Props = {
   deal: Deal;
@@ -16,8 +18,10 @@ type Props = {
 
 export function CompactDealCard({ deal, locked, ctaHref, viewHref }: Props) {
   const t = useT();
+  const locale = useLocaleStore((state) => state.locale);
   const logoSrc = resolveAssetPath(deal.image, "brands");
   const bannerSrc = resolveAssetPath(deal.bannerImage, "banners");
+  const title = getDealTitle(deal, locale);
 
   return (
     <Card className="relative overflow-hidden border border-border bg-background transition duration-200 hover:-translate-y-1 hover:shadow-lg">
@@ -59,7 +63,7 @@ export function CompactDealCard({ deal, locked, ctaHref, viewHref }: Props) {
       </div>
       <div className="space-y-1 px-4 pb-4 pt-3">
         <h3 className="line-clamp-2 text-lg font-semibold text-foreground">
-          {deal.title}
+          {title}
         </h3>
         <p className="text-sm uppercase tracking-widest text-muted-foreground">
           {deal.brand}

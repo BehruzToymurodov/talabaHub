@@ -17,6 +17,8 @@ import { brandStories } from "../../features/deals/brandCopy";
 import { getRecommendations } from "../../features/deals/recommendations";
 import { CompactDealCard } from "./home/CompactDealCard";
 import { useDeals } from "../../features/deals/useDeals";
+import { useLocaleStore } from "../store/useLocaleStore";
+import { getDealTitle } from "../../utils/dealText";
 
 export function AppDealDetailPage() {
   const { id } = useParams();
@@ -25,6 +27,7 @@ export function AppDealDetailPage() {
   const [revealed, setRevealed] = useState(false);
   const user = useAuthStore((state) => state.user);
   const t = useT();
+  const locale = useLocaleStore((state) => state.locale);
   const { deals } = useDeals();
 
   const isVerified = user?.role === "student_verified";
@@ -60,6 +63,7 @@ export function AppDealDetailPage() {
   const sameBrand = deals.filter((item) => item.brand === deal.brand);
   const sameCategory = deals.filter((item) => item.category === deal.category);
   const recommendations = getRecommendations(deals, deal.id, deal.category);
+  const title = getDealTitle(deal, locale);
 
   const showLocked = deal.verifiedOnly && !isVerified;
 
@@ -135,7 +139,7 @@ export function AppDealDetailPage() {
           <p className="text-xs uppercase tracking-widest text-muted-foreground">
             {deal.brand}
           </p>
-          <h1 className="text-3xl font-semibold">{deal.title}</h1>
+          <h1 className="text-3xl font-semibold">{title}</h1>
           <div className="flex flex-wrap gap-2">
             <Badge variant="secondary">{t(categoryLabelKeys[deal.category])}</Badge>
             {deal.verifiedOnly && (

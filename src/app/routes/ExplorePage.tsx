@@ -10,6 +10,7 @@ import { Skeleton } from "../../components/ui/skeleton";
 import { EmptyState } from "../../components/feedback/EmptyState";
 import { Badge } from "../../components/ui/badge";
 import { useT } from "../../i18n";
+import { useLocaleStore } from "../store/useLocaleStore";
 import {
   GraduationCap,
   ShoppingBag,
@@ -31,6 +32,7 @@ export function ExplorePage() {
     sort: "trending",
   });
   const t = useT();
+  const locale = useLocaleStore((state) => state.locale);
 
   const categoryVisuals: Record<
     (typeof dealCategories)[number],
@@ -92,12 +94,16 @@ export function ExplorePage() {
       search: filters.search,
       category: "All",
       sort: filters.sort,
+      locale,
     });
-  }, [deals, selectedCategory, filters]);
+  }, [deals, selectedCategory, filters, locale]);
 
   const previewLimit = 9;
   const previewDeals = categoryDeals.slice(0, previewLimit);
-  const allFiltered = useMemo(() => filterDeals(deals, filters), [deals, filters]);
+  const allFiltered = useMemo(
+    () => filterDeals(deals, { ...filters, locale }),
+    [deals, filters, locale]
+  );
   const allPreview = allFiltered.slice(0, previewLimit);
 
   const groupedByBrand = useMemo(() => {

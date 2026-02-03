@@ -15,12 +15,15 @@ import { brandStories } from "../../features/deals/brandCopy";
 import { getRecommendations } from "../../features/deals/recommendations";
 import { CompactDealCard } from "./home/CompactDealCard";
 import { useDeals } from "../../features/deals/useDeals";
+import { useLocaleStore } from "../store/useLocaleStore";
+import { getDealTitle } from "../../utils/dealText";
 
 export function DealDetailPage() {
   const { id } = useParams();
   const [deal, setDeal] = useState<Deal | null>(null);
   const [loading, setLoading] = useState(true);
   const t = useT();
+  const locale = useLocaleStore((state) => state.locale);
   const { deals } = useDeals();
 
   useEffect(() => {
@@ -54,6 +57,7 @@ export function DealDetailPage() {
   const sameBrand = deals.filter((item) => item.brand === deal.brand);
   const sameCategory = deals.filter((item) => item.category === deal.category);
   const recommendations = getRecommendations(deals, deal.id, deal.category);
+  const title = getDealTitle(deal, locale);
 
   return (
     <div className="container grid gap-6 py-10 lg:grid-cols-[1.1fr_1fr] lg:items-start">
@@ -121,7 +125,7 @@ export function DealDetailPage() {
           <p className="text-xs uppercase tracking-widest text-muted-foreground">
             {deal.brand}
           </p>
-          <h1 className="text-3xl font-semibold">{deal.title}</h1>
+          <h1 className="text-3xl font-semibold">{title}</h1>
           <div className="flex flex-wrap gap-2">
             <Badge variant="secondary">{t(categoryLabelKeys[deal.category])}</Badge>
             {deal.verifiedOnly && (
