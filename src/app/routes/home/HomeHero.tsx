@@ -20,7 +20,7 @@ export function HomeHero({
 }: Props) {
   const t = useT();
   return (
-    <section className="rounded-3xl bg-gradient-to-br from-primary/10 via-background to-accent/10 py-10 md:py-12">
+    <section className="rounded-3xl bg-gradient-to-br from-primary/15 via-background to-accent/10 py-10 md:py-12">
       <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 md:px-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-4">
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">

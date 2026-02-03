@@ -4,9 +4,11 @@ import { Button } from "../../../components/ui/button";
 import { CompactDealCard } from "./CompactDealCard";
 import { useT } from "../../../i18n";
 import { Card } from "../../../components/ui/card";
+import { useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const GRID_CLASS =
-  "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-4";
+const ROW_ITEM_CLASS = "w-64 sm:w-72 lg:w-80";
+const PAGE_SIZE = 4;
 
 type Props = {
   title: string;
@@ -28,30 +30,65 @@ export function HomeSection({
   viewDealPrefix,
 }: Props) {
   const t = useT();
+  const [page, setPage] = useState(0);
+
+  const totalPages = Math.max(1, Math.ceil(deals.length / PAGE_SIZE));
+  const pageDeals = useMemo(() => {
+    const start = page * PAGE_SIZE;
+    return deals.slice(start, start + PAGE_SIZE);
+  }, [deals, page]);
 
   if (deals.length === 0) return null;
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-8 md:px-6 md:py-10">
+    <section className="group mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-7">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <h2 className="text-2xl font-semibold">{title}</h2>
-          <p className="text-sm text-muted-foreground">{subtitle}</p>
+          <h2 className="text-3xl font-semibold">{title}</h2>
+          <p className="text-base text-muted-foreground">{subtitle}</p>
         </div>
         <Button asChild variant="ghost">
           <Link to={viewMoreHref}>{t("action.viewMore")}</Link>
         </Button>
       </div>
-      <div className={`mt-4 ${GRID_CLASS}`}>
-        {deals.map((deal) => (
-          <CompactDealCard
-            key={deal.id}
-            deal={deal}
-            locked={lockedDeals.has(deal.id)}
-            ctaHref={verifyHref}
-            viewHref={`${viewDealPrefix}${deal.id}`}
-          />
-        ))}
+      <div className="relative mt-4 rounded-3xl border border-border bg-card/70 p-4 shadow-sm">
+        <div className="overflow-x-auto pb-2">
+          <div
+            key={page}
+            className="flex gap-4 transition-all duration-300 ease-out animate-fade-up"
+          >
+            {pageDeals.map((deal) => (
+              <div key={deal.id} className={ROW_ITEM_CLASS}>
+                <CompactDealCard
+                  deal={deal}
+                  locked={lockedDeals.has(deal.id)}
+                  ctaHref={verifyHref}
+                  viewHref={`${viewDealPrefix}${deal.id}`}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+        <Button
+          variant="outline"
+          size="icon"
+          className="absolute left-2 top-1/2 hidden -translate-y-1/2 bg-primary text-primary-foreground shadow-lg opacity-0 invisible transition-all duration-200 pointer-events-none group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto md:inline-flex"
+          onClick={() => setPage((prev) => Math.max(0, prev - 1))}
+          disabled={page === 0}
+          aria-label={t("action.prev")}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          className="absolute right-2 top-1/2 hidden -translate-y-1/2 bg-primary text-primary-foreground shadow-lg opacity-0 invisible transition-all duration-200 pointer-events-none group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto md:inline-flex"
+          onClick={() => setPage((prev) => Math.min(totalPages - 1, prev + 1))}
+          disabled={page >= totalPages - 1}
+          aria-label={t("action.next")}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
       </div>
     </section>
   );

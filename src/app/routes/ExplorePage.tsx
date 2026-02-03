@@ -10,6 +10,16 @@ import { Skeleton } from "../../components/ui/skeleton";
 import { EmptyState } from "../../components/feedback/EmptyState";
 import { Badge } from "../../components/ui/badge";
 import { useT } from "../../i18n";
+import {
+  GraduationCap,
+  ShoppingBag,
+  Soup,
+  Phone,
+  Bike,
+  Dumbbell,
+  Monitor,
+  Plane,
+} from "lucide-react";
 
 export function ExplorePage() {
   const { deals, loading } = useDeals();
@@ -21,6 +31,52 @@ export function ExplorePage() {
     sort: "trending",
   });
   const t = useT();
+
+  const categoryVisuals: Record<
+    (typeof dealCategories)[number],
+    { image?: string; icon: typeof GraduationCap; gradient: string }
+  > = {
+    "Food & Drink": {
+      image: "/banners/food.avif",
+      icon: Soup,
+      gradient: "from-amber-200/60 via-orange-100 to-transparent",
+    },
+    Telecom: {
+      image: "/banners/telecom.avif",
+      icon: Phone,
+      gradient: "from-sky-200/60 via-indigo-100 to-transparent",
+    },
+    "Ride & Delivery": {
+      image: "/banners/ride.avif",
+      icon: Bike,
+      gradient: "from-lime-200/60 via-emerald-100 to-transparent",
+    },
+    Fashion: {
+      image: "/banners/fashion.avif",
+      icon: ShoppingBag,
+      gradient: "from-pink-200/60 via-rose-100 to-transparent",
+    },
+    "Books & Education": {
+      image: "/banners/education.avif",
+      icon: GraduationCap,
+      gradient: "from-violet-200/60 via-purple-100 to-transparent",
+    },
+    Fitness: {
+      image: "/banners/fitness.avif",
+      icon: Dumbbell,
+      gradient: "from-teal-200/60 via-cyan-100 to-transparent",
+    },
+    Electronics: {
+      image: "/banners/electronics.avif",
+      icon: Monitor,
+      gradient: "from-blue-200/60 via-sky-100 to-transparent",
+    },
+    Travel: {
+      image: "/banners/travel.avif",
+      icon: Plane,
+      gradient: "from-emerald-200/60 via-teal-100 to-transparent",
+    },
+  };
 
   const categoriesWithCount = useMemo(() => {
     return dealCategories.map((category) => ({
@@ -117,23 +173,55 @@ export function ExplorePage() {
         </div>
       ) : !selectedCategory ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {categoriesWithCount.map((category) => (
-            <button
-              key={category.name}
-              className="flex flex-col items-start gap-2 rounded-2xl border border-border bg-card p-5 text-left transition hover:-translate-y-1 hover:shadow-md"
-              onClick={() => {
-                setSelectedCategory(category.name);
-                setFilters((prev) => ({ ...prev, search: "" }));
-              }}
-            >
-              <p className="text-sm font-semibold">
-                {t(categoryLabelKeys[category.name as keyof typeof categoryLabelKeys])}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {category.count} {t("nav.deals")}
-              </p>
-            </button>
-          ))}
+          {categoriesWithCount.map((category) => {
+            const visual = categoryVisuals[category.name as (typeof dealCategories)[number]];
+            const Icon = visual?.icon ?? ShoppingBag;
+            return (
+              <button
+                key={category.name}
+                className="group overflow-hidden rounded-2xl border border-border bg-card text-left transition hover:-translate-y-1 hover:shadow-md"
+                onClick={() => {
+                  setSelectedCategory(category.name);
+                  setFilters((prev) => ({ ...prev, search: "" }));
+                }}
+                aria-label={t(
+                  categoryLabelKeys[
+                    category.name as keyof typeof categoryLabelKeys
+                  ]
+                )}
+              >
+                <div className="relative h-24 w-full overflow-hidden">
+                  {visual?.image ? (
+                    <img
+                      src={visual.image}
+                      alt=""
+                      className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div
+                      className={`h-full w-full bg-gradient-to-br ${visual?.gradient ?? "from-muted/50 via-muted/20 to-transparent"}`}
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent" />
+                  <div className="absolute left-4 top-4 flex h-10 w-10 items-center justify-center rounded-xl bg-background/90 shadow-sm">
+                    <Icon className="h-5 w-5 text-primary" />
+                  </div>
+                </div>
+                <div className="space-y-1 p-5">
+                  <p className="text-base font-semibold md:text-lg">
+                    {t(
+                      categoryLabelKeys[
+                        category.name as keyof typeof categoryLabelKeys
+                      ]
+                    )}
+                  </p>
+                  <p className="text-sm text-muted-foreground md:text-base">
+                    {category.count} {t("nav.deals")}
+                  </p>
+                </div>
+              </button>
+            );
+          })}
         </div>
       ) : (
         <div className="space-y-6">

@@ -1,11 +1,9 @@
-import { Lock, Bookmark, BookmarkCheck } from "lucide-react";
+import { Bookmark, BookmarkCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { Deal } from "../../types";
-import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
-import { cn } from "../../utils/cn";
-import { formatDate, daysUntil } from "../../utils/date";
+import { Card } from "../ui/card";
+import { formatDate } from "../../utils/date";
 import { useT } from "../../i18n";
 import { categoryLabelKeys } from "../../features/deals/constants";
 import { resolveAssetPath } from "../../utils/assets";
@@ -19,7 +17,6 @@ type Props = {
 };
 
 export function DealCard({ deal, locked, saved, onToggleSave, linkTo }: Props) {
-  const expiringSoon = daysUntil(deal.expiresAt) <= 14;
   const target = linkTo ?? `/deal/${deal.id}`;
   const t = useT();
   const logoSrc = resolveAssetPath(deal.image, "brands");
@@ -27,92 +24,72 @@ export function DealCard({ deal, locked, saved, onToggleSave, linkTo }: Props) {
   const logoText = deal.image ?? deal.brand.slice(0, 2).toUpperCase();
 
   return (
-    <Card className={cn("relative overflow-hidden transition hover:-translate-y-1 hover:shadow-lg")}> 
+    <Card className="relative overflow-hidden border border-border bg-background transition duration-200 hover:-translate-y-1 hover:shadow-lg">
       {locked && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-background/90 text-center backdrop-blur">
-          <Lock className="h-5 w-5 text-muted-foreground" />
-          <p className="text-sm font-semibold">{t("deals.locked.title")}</p>
-          <p className="text-xs text-muted-foreground">
-            {t("deals.locked.subtitle")}
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-background/90 p-4 text-center backdrop-blur">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            {t("deals.locked.title")}
           </p>
+          <Button asChild size="sm">
+            <Link to={target}>{t("action.verifyToUnlock")}</Link>
+          </Button>
         </div>
       )}
-      <CardHeader className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-muted text-sm font-semibold">
-              {logoSrc ? (
-                <img
-                  src={logoSrc}
-                  alt={`${deal.brand} logo`}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <span>{logoText}</span>
-              )}
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                {deal.brand}
-              </p>
-              <h3 className="text-lg font-semibold">{deal.title}</h3>
-            </div>
-          </div>
-          {onToggleSave && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onToggleSave}
-              aria-label={t("action.save")}
-            >
-              {saved ? (
-                <BookmarkCheck className="h-5 w-5" />
-              ) : (
-                <Bookmark className="h-5 w-5" />
-              )}
-            </Button>
-          )}
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="secondary">{t(categoryLabelKeys[deal.category])}</Badge>
-          {deal.verifiedOnly && (
-            <Badge variant="warning">{t("deals.verifiedOnly")}</Badge>
-          )}
-          {expiringSoon && (
-            <Badge variant="outline">
-              {t("deals.expires", { date: formatDate(deal.expiresAt) })}
-            </Badge>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <p className="text-sm text-muted-foreground">{deal.description}</p>
-        <div className="rounded-2xl border border-dashed border-border bg-muted/40 p-3 text-xs text-muted-foreground">
-          {deal.terms}
-        </div>
-        <div className="overflow-hidden rounded-2xl border border-border">
+      <div className="relative">
+        <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted">
           {bannerSrc ? (
             <img
               src={bannerSrc}
               alt={`${deal.brand} promo`}
-              className="h-24 w-full object-cover"
+              className="h-full w-full object-cover"
             />
           ) : (
-            <div className="relative h-24 bg-gradient-to-r from-primary/15 via-accent/20 to-transparent">
-              <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-primary/20 blur-xl" />
-              <div className="absolute left-6 bottom-2 h-14 w-14 rounded-full bg-accent/30 blur-lg" />
-            </div>
+            <div className="h-full w-full bg-gradient-to-br from-primary/10 via-accent/20 to-transparent" />
           )}
         </div>
-      </CardContent>
-      <CardFooter className="flex items-center justify-between">
-        <div className="text-xs text-muted-foreground">
-          {t("deals.expiresAt", { date: formatDate(deal.expiresAt) })}
+        <div className="absolute left-3 top-3 flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-sm">
+          {logoSrc ? (
+            <img
+              src={logoSrc}
+              alt={`${deal.brand} logo`}
+              className="h-full w-full object-contain"
+            />
+          ) : (
+            <span className="text-xs font-semibold">{logoText}</span>
+          )}
         </div>
-        <Button asChild size="sm">
+        {onToggleSave && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onToggleSave}
+            aria-label={t("action.save")}
+            className="absolute right-3 top-3 bg-white/90 shadow-sm"
+          >
+            {saved ? (
+              <BookmarkCheck className="h-4 w-4" />
+            ) : (
+              <Bookmark className="h-4 w-4" />
+            )}
+          </Button>
+        )}
+      </div>
+      <div className="space-y-1 px-4 pb-4 pt-3">
+        <h3 className="line-clamp-2 text-lg font-semibold text-foreground">
+          {deal.title}
+        </h3>
+        <p className="text-sm uppercase tracking-widest text-muted-foreground">
+          {deal.brand}
+        </p>
+        <p className="text-sm text-muted-foreground">
+          {deal.verifiedOnly ? t("deals.verifiedOnly") : t(categoryLabelKeys[deal.category])}
+          <span className="mx-1">•</span>
+          {t("label.expires", { date: formatDate(deal.expiresAt) })}
+        </p>
+        <Button asChild size="sm" className="mt-2 w-full">
           <Link to={target}>{t("action.viewDeal")}</Link>
         </Button>
-      </CardFooter>
+      </div>
     </Card>
   );
 }

@@ -57,9 +57,9 @@ function SectionSkeleton() {
         </div>
         <Skeleton className="h-9 w-24" />
       </div>
-      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-4">
-        {Array.from({ length: 10 }).map((_, index) => (
-          <Skeleton key={index} className="h-40 w-full" />
+      <div className="mt-4 flex gap-4 overflow-hidden">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <Skeleton key={index} className="h-48 w-64 lg:h-56 lg:w-72" />
         ))}
       </div>
     </div>
@@ -86,7 +86,7 @@ export function HomePage() {
   const isVerified = user?.role === "student_verified";
   const verifyHref = user ? "/app/verify" : "/auth";
   const viewDealPrefix = user ? "/app/deal/" : "/deal/";
-  const sectionLimit = isVerified ? 10 : 6;
+  const sectionLimit = isVerified ? 16 : 12;
 
   const bannerCopy = useMemo(() => {
     if (!user || user.role === "admin" || isVerified) return null;
@@ -137,7 +137,7 @@ export function HomePage() {
   }, [filteredDeals, sectionLimit]);
 
   return (
-    <div className="space-y-8 pb-10">
+    <div className="space-y-5 pb-8">
       <HomeHero
         search={search}
         onSearchChange={setSearch}
