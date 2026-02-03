@@ -46,7 +46,7 @@ export function ExplorePage() {
       icon: Phone,
       gradient: "from-sky-200/60 via-indigo-100 to-transparent",
     },
-    "Ride & Delivery": {
+    "Ride/Delivery": {
       image: "/banners/ride.avif",
       icon: Bike,
       gradient: "from-lime-200/60 via-emerald-100 to-transparent",
