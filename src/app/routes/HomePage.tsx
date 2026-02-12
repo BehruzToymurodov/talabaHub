@@ -11,8 +11,6 @@ import { HomeHero } from "./home/HomeHero";
 import { PromoTiles, type PromoTile } from "./home/PromoTiles";
 import { HomeEmptyState, HomeSection } from "./home/HomeSection";
 import { StatusBanner } from "../../components/feedback/StatusBanner";
-import { useLocaleStore } from "../store/useLocaleStore";
-import { getDealTitle } from "../../utils/dealText";
 
 const SECTION_CATEGORIES: DealCategory[] = [
   "Food & Drink",
@@ -72,7 +70,6 @@ export function HomePage() {
   const { deals, loading } = useDeals();
   const user = useAuthStore((state) => state.user);
   const t = useT();
-  const locale = useLocaleStore((state) => state.locale);
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
 
@@ -80,11 +77,9 @@ export function HomePage() {
   const filteredDeals = useMemo(() => {
     if (!normalizedSearch) return deals;
     return deals.filter(
-      (deal) =>
-        deal.brand.toLowerCase().includes(normalizedSearch) ||
-        getDealTitle(deal, locale).toLowerCase().includes(normalizedSearch)
+      (deal) => deal.brand.toLowerCase().includes(normalizedSearch)
     );
-  }, [deals, locale, normalizedSearch]);
+  }, [deals, normalizedSearch]);
 
   const isVerified = user?.role === "student_verified";
   const verifyHref = user ? "/app/verify" : "/auth";

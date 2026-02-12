@@ -1,6 +1,6 @@
 import type { Deal, User } from '../../types'
-import { readStorage, writeStorage } from './storage'
 import { resolveAssetPath } from '../../utils/assets'
+import { readStorage, writeStorage } from './storage'
 
 const SEED_VERSION = 4
 
@@ -299,7 +299,7 @@ const seedDeals: Deal[] = [
 		image: '/brands/express24.jpg',
 	},
 	{
-		id: 'deal_express24_2',
+		id: 'deal_express24_2/',
 		brand: 'Express24',
 		category: 'Ride/Delivery',
 		title: '10% off grocery delivery',
@@ -753,15 +753,20 @@ const seedDeals: Deal[] = [
 const seedUsers: User[] = [
 	{
 		id: 'user_verified_1',
-		email: 'verified.student@uni.uz',
+		email: "b.to'ymurodov@student.inha.uz",
 		password: 'Talaba123!',
+		firstName: 'Behruz',
+		lastName: "To'ymurodov",
+		username: 'behruz.toymurodov',
+		age: 20,
+		universityName: 'INHA University in Tashkent',
 		role: 'student_verified',
 		createdAt: '2025-09-01',
 		verificationStatus: 'verified',
 		verification: {
-			studentEmail: 'verified.student@uni.uz',
-			universityName: 'Tashkent University of Information Technologies',
-			studentId: 'TU123456',
+			studentEmail: "b.to'ymurodov@student.inha.uz",
+			universityName: 'INHA University in Tashkent',
+			studentId: 'U2310268',
 			status: 'verified',
 			submittedAt: '2025-09-02',
 			reviewedAt: '2025-09-03',
@@ -772,6 +777,11 @@ const seedUsers: User[] = [
 		id: 'user_unverified_1',
 		email: 'student@uni.uz',
 		password: 'Talaba123!',
+		firstName: 'Dilnoza',
+		lastName: 'Rustamova',
+		username: 'dilnoza.r',
+		age: 19,
+		universityName: 'National University of Uzbekistan',
 		role: 'student_unverified',
 		createdAt: '2025-10-11',
 		verificationStatus: 'unverified',
@@ -781,6 +791,11 @@ const seedUsers: User[] = [
 		id: 'user_admin_1',
 		email: 'admin@talabahub.uz',
 		password: 'Admin123!',
+		firstName: 'Admin',
+		lastName: 'User',
+		username: 'admin',
+		age: 28,
+		universityName: 'INHA University in Tashkent',
 		role: 'admin',
 		createdAt: '2025-08-20',
 		verificationStatus: 'verified',
@@ -801,7 +816,9 @@ export function ensureSeedData() {
 			image: normalizedLogo ?? deal.image,
 			bannerImage:
 				normalizedBanner ??
-				(deal.category === 'Food & Drink' ? '/banners/food.avif' : deal.bannerImage),
+				(deal.category === 'Food & Drink'
+					? '/banners/food.avif'
+					: deal.bannerImage),
 		}
 	}
 

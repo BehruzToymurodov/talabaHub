@@ -7,7 +7,7 @@ import { Card } from "../../../components/ui/card";
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const ROW_ITEM_CLASS = "min-w-full sm:min-w-[18rem] sm:w-72 lg:w-80";
+const ROW_ITEM_CLASS = "w-full";
 const PAGE_SIZE = 4;
 
 type Props = {
@@ -51,11 +51,11 @@ export function HomeSection({
           <Link to={viewMoreHref}>{t("action.viewMore")}</Link>
         </Button>
       </div>
-      <div className="relative mt-4 rounded-3xl border border-border bg-card/70 p-4 shadow-sm">
-        <div className="overflow-x-auto pb-2">
+      <div className="relative mt-4">
+        <div className="rounded-3xl border border-border bg-card/70 p-4 shadow-sm">
           <div
             key={page}
-            className="flex gap-4 transition-all duration-300 ease-out animate-fade-up"
+            className="grid gap-4 transition-all duration-300 ease-out animate-fade-up sm:grid-cols-2 lg:grid-cols-4"
           >
             {pageDeals.map((deal) => (
               <div key={deal.id} className={ROW_ITEM_CLASS}>
@@ -72,7 +72,7 @@ export function HomeSection({
         <Button
           variant="outline"
           size="icon"
-          className="absolute left-2 top-1/2 hidden -translate-y-1/2 bg-primary text-primary-foreground shadow-lg opacity-0 invisible transition-all duration-200 pointer-events-none group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto md:inline-flex"
+          className="absolute left-0 top-1/2 z-20 hidden -translate-x-full -translate-y-1/2 bg-primary text-primary-foreground shadow-lg opacity-0 invisible transition-all duration-200 pointer-events-none group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto md:inline-flex"
           onClick={() => setPage((prev) => Math.max(0, prev - 1))}
           disabled={page === 0}
           aria-label={t("action.prev")}
@@ -82,7 +82,7 @@ export function HomeSection({
         <Button
           variant="outline"
           size="icon"
-          className="absolute right-2 top-1/2 hidden -translate-y-1/2 bg-primary text-primary-foreground shadow-lg opacity-0 invisible transition-all duration-200 pointer-events-none group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto md:inline-flex"
+          className="absolute right-0 top-1/2 z-20 hidden translate-x-full -translate-y-1/2 bg-primary text-primary-foreground shadow-lg opacity-0 invisible transition-all duration-200 pointer-events-none group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto md:inline-flex"
           onClick={() => setPage((prev) => Math.min(totalPages - 1, prev + 1))}
           disabled={page >= totalPages - 1}
           aria-label={t("action.next")}

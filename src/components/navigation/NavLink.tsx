@@ -7,12 +7,14 @@ type Props = {
   label: string;
   icon?: ReactNode;
   className?: string;
+  end?: boolean;
 };
 
-export function NavLink({ to, label, icon, className }: Props) {
+export function NavLink({ to, label, icon, className, end }: Props) {
   return (
     <RouterNavLink
       to={to}
+      end={end}
       className={({ isActive }) =>
         cn(
           "flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition",

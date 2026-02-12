@@ -6,8 +6,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/ca
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Button } from "../../components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../components/ui/select";
 import { useAuthStore } from "../store/useAuthStore";
 import { useT } from "../../i18n";
+import { universities } from "../../data/universities";
 
 export function AuthPage() {
   const navigate = useNavigate();
@@ -20,7 +28,11 @@ export function AuthPage() {
 
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [registerFirstName, setRegisterFirstName] = useState("");
+  const [registerLastName, setRegisterLastName] = useState("");
   const [registerEmail, setRegisterEmail] = useState("");
+  const [registerUniversity, setRegisterUniversity] = useState("");
+  const [registerAge, setRegisterAge] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
 
   useEffect(() => {
@@ -45,8 +57,29 @@ export function AuthPage() {
 
   const handleRegister = async () => {
     try {
-      await register(registerEmail, registerPassword);
+      const ageValue = Number(registerAge);
+      if (
+        !registerFirstName.trim() ||
+        !registerLastName.trim() ||
+        !registerEmail.trim() ||
+        !registerPassword ||
+        !registerUniversity ||
+        !Number.isFinite(ageValue) ||
+        ageValue <= 0
+      ) {
+        toast.error(t("toast.completeFields"));
+        return;
+      }
+      await register({
+        email: registerEmail.trim(),
+        password: registerPassword,
+        firstName: registerFirstName.trim(),
+        lastName: registerLastName.trim(),
+        age: ageValue,
+        universityName: registerUniversity,
+      });
       toast.success(t("toast.accountCreated"));
+      toast.success(t("toast.otpSent", { email: registerEmail.trim() }));
       navigate("/app", { replace: true });
     } catch (error) {
       toast.error((error as Error).message);
@@ -99,12 +132,56 @@ export function AuthPage() {
             </TabsContent>
             <TabsContent value="register" className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="registerEmail">{t("label.email")}</Label>
+                <Label htmlFor="registerFirstName">{t("label.firstName")}</Label>
+                <Input
+                  id="registerFirstName"
+                  value={registerFirstName}
+                  onChange={(event) => setRegisterFirstName(event.target.value)}
+                  placeholder={t("label.firstName")}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="registerLastName">{t("label.lastName")}</Label>
+                <Input
+                  id="registerLastName"
+                  value={registerLastName}
+                  onChange={(event) => setRegisterLastName(event.target.value)}
+                  placeholder={t("label.lastName")}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="registerEmail">{t("label.studentEmail")}</Label>
                 <Input
                   id="registerEmail"
                   value={registerEmail}
                   onChange={(event) => setRegisterEmail(event.target.value)}
                   placeholder="you@uni.uz"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>{t("label.university")}</Label>
+                <Select value={registerUniversity} onValueChange={setRegisterUniversity}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("label.university")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {universities.map((uni) => (
+                      <SelectItem key={uni} value={uni}>
+                        {uni}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="registerAge">{t("label.age")}</Label>
+                <Input
+                  id="registerAge"
+                  type="number"
+                  min={0}
+                  value={registerAge}
+                  onChange={(event) => setRegisterAge(event.target.value)}
+                  placeholder="18"
                 />
               </div>
               <div className="space-y-2">

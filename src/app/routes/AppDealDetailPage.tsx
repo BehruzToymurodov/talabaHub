@@ -8,6 +8,14 @@ import { useAuthStore } from "../store/useAuthStore";
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../../components/ui/dialog";
 import { Skeleton } from "../../components/ui/skeleton";
 import { formatDate } from "../../utils/date";
 import { resolveAssetPath } from "../../utils/assets";
@@ -66,6 +74,13 @@ export function AppDealDetailPage() {
   const title = getDealTitle(deal, locale);
 
   const showLocked = deal.verifiedOnly && !isVerified;
+  const mealDetail = deal.eligibleItems
+    ?? (deal.category === "Food & Drink"
+      ? t("dealDetails.mealFallbackFood")
+      : t("dealDetails.mealFallbackGeneral"));
+  const branchDetail = deal.branches ?? t("dealDetails.branchFallback");
+  const qrValue = deal.redemptionUrl ?? `${deal.brand} - ${deal.code}`;
+  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(qrValue)}`;
 
   return (
     <div className="container grid gap-6 py-10 lg:grid-cols-[1.1fr_1fr] lg:items-start">
@@ -122,14 +137,46 @@ export function AppDealDetailPage() {
             <div className="rounded-xl border border-dashed border-border bg-muted/40 p-4 text-xs text-muted-foreground">
               {deal.terms}
             </div>
+            <div className="rounded-xl border border-border bg-background p-4 text-sm">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-muted-foreground">{t("dealDetails.detailExpires")}</span>
+                  <span className="font-semibold">{formatDate(deal.expiresAt)}</span>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-muted-foreground">{t("dealDetails.detailMeal")}</span>
+                  <span className="font-semibold">{mealDetail}</span>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-muted-foreground">{t("dealDetails.detailBranch")}</span>
+                  <span className="font-semibold">{branchDetail}</span>
+                </div>
+              </div>
+            </div>
             {showLocked ? (
               <Button asChild size="lg" className="w-full">
                 <Link to="/app/verify">{t("action.verifyToUnlock")}</Link>
               </Button>
             ) : (
-              <Button variant="outline" size="lg" className="w-full">
-                {t("action.useDeal")}
-              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="lg" className="w-full">
+                    {t("action.useDeal")}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-sm">
+                  <DialogHeader>
+                    <DialogTitle>{t("dealDetails.qrTitle")}</DialogTitle>
+                    <DialogDescription>{t("dealDetails.qrSubtitle")}</DialogDescription>
+                  </DialogHeader>
+                  <div className="flex flex-col items-center gap-3">
+                    <img src={qrSrc} alt={t("dealDetails.qrTitle")} className="h-56 w-56" />
+                    <p className="text-xs text-muted-foreground">
+                      {deal.redemptionUrl ?? deal.code}
+                    </p>
+                  </div>
+                </DialogContent>
+              </Dialog>
             )}
           </CardContent>
         </Card>

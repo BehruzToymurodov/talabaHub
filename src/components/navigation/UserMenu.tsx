@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { useT } from "../../i18n";
+import { getUserDisplayName, getUserInitials } from "../../utils/user";
 
 export function UserMenu() {
   const navigate = useNavigate();
@@ -18,12 +19,25 @@ export function UserMenu() {
   const t = useT();
 
   if (!user) return null;
+  const displayName = getUserDisplayName(user);
+  const initials = getUserInitials(user);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="rounded-full px-4">
-          {user.email}
+        <Button variant="outline" className="flex items-center gap-2 rounded-full px-3">
+          <span className="relative flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-xs font-semibold">
+            {user.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt={displayName}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              initials
+            )}
+          </span>
+          <span className="max-w-[140px] truncate">{displayName}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

@@ -15,10 +15,9 @@ export function AppTopNav() {
           <Logo />
         </Link>
         <nav className="hidden items-center gap-2 md:flex">
-          <NavLink to="/app" label={t("nav.dashboard")} />
+          <NavLink to="/app" label={t("nav.dashboard")} end />
           <NavLink to="/app/deals" label={t("nav.explore")} />
           <NavLink to="/app/saved" label={t("nav.saved")} />
-          <NavLink to="/app/profile" label={t("nav.profile")} />
         </nav>
         <div className="flex items-center gap-2">
           <LanguageSelect />

@@ -5,6 +5,16 @@ export type User = {
   id: string;
   email: string;
   password: string;
+  firstName?: string;
+  lastName?: string;
+  username?: string;
+  age?: number;
+  universityName?: string;
+  avatarUrl?: string;
+  otp?: {
+    code: string;
+    sentAt: string;
+  };
   role: UserRole;
   createdAt: string;
   verificationStatus: VerificationStatus;
@@ -53,6 +63,8 @@ export type Deal = {
   redemptionUrl?: string;
   image?: string;
   bannerImage?: string;
+  eligibleItems?: string;
+  branches?: string;
 };
 
 export type Session = {

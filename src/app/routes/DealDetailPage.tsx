@@ -58,6 +58,11 @@ export function DealDetailPage() {
   const sameCategory = deals.filter((item) => item.category === deal.category);
   const recommendations = getRecommendations(deals, deal.id, deal.category);
   const title = getDealTitle(deal, locale);
+  const mealDetail = deal.eligibleItems
+    ?? (deal.category === "Food & Drink"
+      ? t("dealDetails.mealFallbackFood")
+      : t("dealDetails.mealFallbackGeneral"));
+  const branchDetail = deal.branches ?? t("dealDetails.branchFallback");
 
   return (
     <div className="container grid gap-6 py-10 lg:grid-cols-[1.1fr_1fr] lg:items-start">
@@ -113,6 +118,22 @@ export function DealDetailPage() {
             </div>
             <div className="rounded-xl border border-dashed border-border bg-muted/40 p-4 text-xs text-muted-foreground">
               {deal.terms}
+            </div>
+            <div className="rounded-xl border border-border bg-background p-4 text-sm">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-muted-foreground">{t("dealDetails.detailExpires")}</span>
+                  <span className="font-semibold">{formatDate(deal.expiresAt)}</span>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-muted-foreground">{t("dealDetails.detailMeal")}</span>
+                  <span className="font-semibold">{mealDetail}</span>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-muted-foreground">{t("dealDetails.detailBranch")}</span>
+                  <span className="font-semibold">{branchDetail}</span>
+                </div>
+              </div>
             </div>
             <Button asChild size="lg" className="w-full">
               <Link to="/auth">{t("dealDetails.loginUnlock")}</Link>

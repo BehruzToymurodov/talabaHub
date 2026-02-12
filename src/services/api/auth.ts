@@ -3,6 +3,15 @@ import { withLatency } from "../../utils/latency";
 import { readStorage, removeStorage, writeStorage } from "../storage/storage";
 import { isStudentEmail } from "../../utils/email";
 
+type RegisterPayload = {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  age: number;
+  universityName: string;
+};
+
 function getUsers() {
   return readStorage<User[]>("users", []);
 }
@@ -33,7 +42,7 @@ export const authApi = {
       writeStorage("session", session);
       return { user, session };
     }),
-  register: async (email: string, password: string) =>
+  register: async ({ email, password, firstName, lastName, age, universityName }: RegisterPayload) =>
     withLatency(() => {
       const users = getUsers();
       const exists = users.some(
@@ -42,18 +51,28 @@ export const authApi = {
       if (exists) {
         throw new Error("Email already registered");
       }
+      if (!isStudentEmail(email)) {
+        throw new Error("Please use a student email address");
+      }
+      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
       const user: User = {
         id: `user_${Math.random().toString(36).slice(2)}`,
         email,
         password,
+        firstName,
+        lastName,
+        username: email.split("@")[0] ?? "",
+        age,
+        universityName,
+        otp: {
+          code: otpCode,
+          sentAt: new Date().toISOString(),
+        },
         role: "student_unverified",
         createdAt: new Date().toISOString(),
         verificationStatus: "unverified",
         savedDealIds: [],
       };
-      if (isStudentEmail(email)) {
-        user.verificationStatus = "unverified";
-      }
       users.push(user);
       saveUsers(users);
       const session = createSession(user.id);

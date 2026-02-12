@@ -25,7 +25,7 @@ export function AppProviders({ children }: Props) {
   return (
     <>
       {children}
-      <Toaster position="top-right" richColors />
+      <Toaster position="top-center" richColors />
     </>
   );
 }

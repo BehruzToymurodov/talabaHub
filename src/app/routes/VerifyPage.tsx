@@ -14,14 +14,7 @@ import {
 } from "../../components/ui/select";
 import { Button } from "../../components/ui/button";
 import { useT } from "../../i18n";
-
-const universities = [
-  "Tashkent University of Information Technologies",
-  "National University of Uzbekistan",
-  "Westminster International University",
-  "Tashkent State University of Economics",
-  "Other",
-];
+import { universities } from "../../data/universities";
 
 export function VerifyPage() {
   const user = useAuthStore((state) => state.user);

@@ -1,15 +1,14 @@
 import { NavLink } from "react-router-dom";
-import { Bookmark, Home, Search, User } from "lucide-react";
+import { Bookmark, Home, Search } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { useT } from "../../i18n";
 
 export function MobileBottomNav() {
   const t = useT();
   const items = [
-    { to: "/app", label: t("nav.home"), icon: Home },
+    { to: "/app", label: t("nav.home"), icon: Home, end: true },
     { to: "/app/deals", label: t("nav.explore"), icon: Search },
     { to: "/app/saved", label: t("nav.saved"), icon: Bookmark },
-    { to: "/app/profile", label: t("nav.profile"), icon: User },
   ];
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-background/95 backdrop-blur md:hidden">
@@ -20,6 +19,7 @@ export function MobileBottomNav() {
             <NavLink
               key={item.to}
               to={item.to}
+              end={item.end}
               className={({ isActive }) =>
                 cn(
                   "flex flex-col items-center gap-1 rounded-xl px-3 py-2 text-xs font-semibold",
