@@ -37,42 +37,42 @@ export function ExplorePage() {
     { image?: string; icon: typeof GraduationCap; gradient: string }
   > = {
     "Food & Drink": {
-      image: "/banners/food.avif",
+      image: "/banners/fast_food.jpg",
       icon: Soup,
-      gradient: "from-amber-200/60 via-orange-100 to-transparent",
+      gradient: "from-amber-200/60 via-blue-100 to-transparent",
     },
     Telecom: {
-      image: "/banners/telecom.avif",
+      image: "/banners/products.png",
       icon: Phone,
       gradient: "from-sky-200/60 via-indigo-100 to-transparent",
     },
     "Ride/Delivery": {
-      image: "/banners/ride.avif",
+      image: "/banners/delivery.avif",
       icon: Bike,
       gradient: "from-lime-200/60 via-emerald-100 to-transparent",
     },
     Fashion: {
-      image: "/banners/fashion.avif",
+      image: "/banners/clothes.avif",
       icon: ShoppingBag,
       gradient: "from-pink-200/60 via-rose-100 to-transparent",
     },
     "Books & Education": {
-      image: "/banners/education.avif",
+      image: "/banners/books.webp",
       icon: GraduationCap,
       gradient: "from-violet-200/60 via-purple-100 to-transparent",
     },
     Fitness: {
-      image: "/banners/fitness.avif",
+      image: "/banners/products.png",
       icon: Dumbbell,
       gradient: "from-teal-200/60 via-cyan-100 to-transparent",
     },
     Electronics: {
-      image: "/banners/electronics.avif",
+      image: "/banners/electronics.jpg",
       icon: Monitor,
       gradient: "from-blue-200/60 via-sky-100 to-transparent",
     },
     Travel: {
-      image: "/banners/travel.avif",
+      image: "/banners/products.png",
       icon: Plane,
       gradient: "from-emerald-200/60 via-teal-100 to-transparent",
     },

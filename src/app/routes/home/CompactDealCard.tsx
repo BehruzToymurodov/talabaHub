@@ -24,7 +24,7 @@ export function CompactDealCard({ deal, locked, ctaHref, viewHref }: Props) {
   const title = getDealTitle(deal, locale);
 
   return (
-    <Card className="relative overflow-hidden border border-border bg-background transition duration-200 hover:-translate-y-1 hover:shadow-lg">
+    <Card className="relative flex h-full flex-col overflow-hidden border border-border bg-background transition duration-200 hover:-translate-y-1 hover:shadow-lg">
       {locked && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-background/90 p-4 text-center backdrop-blur">
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
@@ -61,7 +61,7 @@ export function CompactDealCard({ deal, locked, ctaHref, viewHref }: Props) {
           )}
         </div>
       </div>
-      <div className="space-y-1 px-4 pb-4 pt-3">
+      <div className="flex flex-1 flex-col space-y-1 px-4 pb-4 pt-3">
         <h3 className="line-clamp-2 text-lg font-semibold text-foreground">
           {title}
         </h3>
@@ -73,7 +73,7 @@ export function CompactDealCard({ deal, locked, ctaHref, viewHref }: Props) {
           <span className="mx-1">•</span>
           {t("label.expires", { date: formatDate(deal.expiresAt) })}
         </p>
-        <Button asChild size="sm" className="mt-2 w-full">
+        <Button asChild size="sm" className="mt-auto w-full">
           <Link to={viewHref}>{t("action.viewDeal")}</Link>
         </Button>
       </div>

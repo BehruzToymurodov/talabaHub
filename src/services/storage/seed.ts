@@ -2,7 +2,18 @@ import type { Deal, User } from '../../types'
 import { resolveAssetPath } from '../../utils/assets'
 import { readStorage, writeStorage } from './storage'
 
-const SEED_VERSION = 4
+const SEED_VERSION = 5
+
+const categoryBannerMap: Record<Deal['category'], string> = {
+	'Food & Drink': '/banners/fast_food.avif',
+	Telecom: '/banners/telecom.webp',
+	'Ride/Delivery': '/banners/delivery.avif',
+	Fashion: '/banners/clothes.avif',
+	'Books & Education': '/banners/books.webp',
+	Fitness: '/banners/products.png',
+	Electronics: '/banners/electronics.jpg',
+	Travel: '/banners/products.png',
+}
 
 const seedDeals: Deal[] = [
 	{
@@ -816,9 +827,8 @@ export function ensureSeedData() {
 			image: normalizedLogo ?? deal.image,
 			bannerImage:
 				normalizedBanner ??
-				(deal.category === 'Food & Drink'
-					? '/banners/food.avif'
-					: deal.bannerImage),
+				categoryBannerMap[deal.category] ??
+				deal.bannerImage,
 		}
 	}
 

@@ -25,7 +25,7 @@ const promoTiles: PromoTile[] = [
   {
     category: "Food & Drink",
     descriptionKey: "home.promo.food",
-    accentClass: "bg-gradient-to-br from-amber-500/10 via-transparent to-orange-500/10",
+    accentClass: "bg-gradient-to-br from-amber-500/10 via-transparent to-blue-500/10",
   },
   {
     category: "Fashion",

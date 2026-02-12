@@ -7,7 +7,7 @@ import { Card } from "../../../components/ui/card";
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const ROW_ITEM_CLASS = "w-full";
+const ROW_ITEM_CLASS = "w-full h-full";
 const PAGE_SIZE = 4;
 
 type Props = {
