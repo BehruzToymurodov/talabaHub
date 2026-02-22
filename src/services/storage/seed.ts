@@ -764,8 +764,8 @@ const seedDeals: Deal[] = [
 const seedUsers: User[] = [
 	{
 		id: 'user_verified_1',
-		email: "b.to'ymurodov@student.inha.uz",
-		password: 'Talaba123!',
+		email: 'b.toymurodov@student.inha.uz',
+		password: 'Talaba123@',
 		firstName: 'Behruz',
 		lastName: "To'ymurodov",
 		username: 'behruz.toymurodov',
@@ -775,7 +775,7 @@ const seedUsers: User[] = [
 		createdAt: '2025-09-01',
 		verificationStatus: 'verified',
 		verification: {
-			studentEmail: "b.to'ymurodov@student.inha.uz",
+			studentEmail: 'b.toymurodov@student.inha.uz',
 			universityName: 'INHA University in Tashkent',
 			studentId: 'U2310268',
 			status: 'verified',
