@@ -13,7 +13,7 @@ export function Logo({ className }: { className?: string }) {
           className="h-8 w-auto object-contain sm:h-10 lg:h-12"
         />
       </div>
-      <div className="leading-tight">
+      <div className="hidden leading-tight sm:block">
         <p className="text-sm font-semibold">TalabaHub</p>
         <p className="text-xs text-muted-foreground">{t("brand.tagline")}</p>
       </div>
