@@ -815,7 +815,7 @@ const seedUsers: User[] = [
 ]
 
 export function ensureSeedData() {
-	const users = readStorage<User[]>('users', [])
+	let users = readStorage<User[]>('users', [])
 	const deals = readStorage<Deal[]>('deals', [])
 	const seedVersion = readStorage<number>('seedVersion', 0)
 
@@ -832,8 +832,54 @@ export function ensureSeedData() {
 		}
 	}
 
+	const verifiedSeedUser = seedUsers.find((user) => user.id === 'user_verified_1')
+	const legacyVerifiedEmail = "b.to'ymurodov@student.inha.uz"
+	const upsertVerifiedSeedUser = (current: User[]) => {
+		if (!verifiedSeedUser) return { users: current, changed: false }
+		const index = current.findIndex(
+			(user) =>
+				user.id === verifiedSeedUser.id ||
+				user.email.toLowerCase() === legacyVerifiedEmail.toLowerCase()
+		)
+		if (index === -1) {
+			return { users: [...current, verifiedSeedUser], changed: true }
+		}
+		const existing = current[index]
+		const updated: User = {
+			...existing,
+			email: verifiedSeedUser.email,
+			password: verifiedSeedUser.password,
+			role: verifiedSeedUser.role,
+			verificationStatus: verifiedSeedUser.verificationStatus,
+			verification: verifiedSeedUser.verification,
+		}
+		const changed =
+			existing.email !== updated.email ||
+			existing.password !== updated.password ||
+			existing.role !== updated.role ||
+			existing.verificationStatus !== updated.verificationStatus ||
+			existing.verification?.studentEmail !==
+				updated.verification?.studentEmail
+		if (!changed) return { users: current, changed: false }
+		const next = [...current]
+		next[index] = updated
+		return { users: next, changed: true }
+	}
+
+	let usersChanged = false
 	if (users.length === 0) {
-		writeStorage('users', seedUsers)
+		users = seedUsers
+		usersChanged = true
+	}
+
+	const normalizedUsers = upsertVerifiedSeedUser(users)
+	if (normalizedUsers.changed) {
+		users = normalizedUsers.users
+		usersChanged = true
+	}
+
+	if (usersChanged) {
+		writeStorage('users', users)
 	}
 
 	if (deals.length === 0) {
