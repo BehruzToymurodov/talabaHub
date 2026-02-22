@@ -160,7 +160,11 @@ export function AppDealDetailPage() {
             ) : (
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="lg" className="w-full">
+                  <Button
+                    variant="default"
+                    size="lg"
+                    className="w-full bg-blue-600 text-white hover:bg-blue-700"
+                  >
                     {t("action.useDeal")}
                   </Button>
                 </DialogTrigger>
@@ -241,7 +245,8 @@ export function AppDealDetailPage() {
                     </Button>
                   </div>
                   <Button
-                    variant="secondary"
+                    variant="default"
+                    className="bg-blue-600 text-white hover:bg-blue-700"
                     onClick={() => {
                       setRevealed(true);
                       toast.success(t("toast.codeRevealed"));
