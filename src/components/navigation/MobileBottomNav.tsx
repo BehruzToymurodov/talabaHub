@@ -1,10 +1,14 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { Bookmark, Home, LayoutGrid, Search } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { useT } from "../../i18n";
 
 export function MobileBottomNav() {
   const t = useT();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const view = params.get("view");
+  const isDealsPage = location.pathname === "/app/deals";
   const items = [
     { to: "/app", label: t("nav.home"), icon: Home, end: true },
     { to: "/app/deals", label: t("nav.explore"), icon: Search },
@@ -16,16 +20,34 @@ export function MobileBottomNav() {
       <div className="flex items-center justify-around px-3 py-2">
         {items.map((item) => {
           const Icon = item.icon;
+          const isCategoriesItem = item.to.includes("view=categories");
           return (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.end}
-              className={({ isActive }) =>
-                cn(
+              className={({ isActive }) => {
+                const active =
+                  isDealsPage && item.to.startsWith("/app/deals")
+                    ? isCategoriesItem
+                      ? view === "categories"
+                      : view !== "categories"
+                    : isActive;
+                return cn(
                   "flex flex-col items-center gap-1 rounded-xl px-3 py-2 text-xs font-semibold",
-                  isActive ? "text-primary" : "text-muted-foreground"
-                )
+                  active ? "text-primary" : "text-muted-foreground"
+                );
+              }}
+              aria-current={
+                isDealsPage && item.to.startsWith("/app/deals")
+                  ? isCategoriesItem
+                    ? view === "categories"
+                      ? "page"
+                      : undefined
+                    : view !== "categories"
+                      ? "page"
+                      : undefined
+                  : undefined
               }
             >
               <Icon className="h-5 w-5" />

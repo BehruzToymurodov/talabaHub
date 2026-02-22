@@ -46,8 +46,9 @@ export function StudentDealsPage() {
     if (nextView === "categories") {
       setView("categories");
       setSelectedCategory(null);
-    } else if (nextView === "all") {
+    } else {
       setView("all");
+      setPage(1);
     }
   }, [searchParams]);
 
