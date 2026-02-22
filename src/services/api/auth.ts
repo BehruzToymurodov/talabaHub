@@ -29,11 +29,14 @@ function createSession(userId: string): Session {
 }
 
 export const authApi = {
-  login: async (email: string, password: string) =>
+  login: async (emailOrUsername: string, password: string) =>
     withLatency(() => {
+      const identifier = emailOrUsername.trim().toLowerCase();
       const users = getUsers();
       const user = users.find(
-        (item) => item.email.toLowerCase() === email.toLowerCase()
+        (item) =>
+          item.email.toLowerCase() === identifier ||
+          item.username?.toLowerCase() === identifier
       );
       if (!user || user.password !== password) {
         throw new Error("Invalid email or password");
