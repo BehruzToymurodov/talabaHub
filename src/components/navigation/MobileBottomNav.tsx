@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Bookmark, Home, Search } from "lucide-react";
+import { Bookmark, Home, LayoutGrid, Search } from "lucide-react";
 import { cn } from "../../utils/cn";
 import { useT } from "../../i18n";
 
@@ -8,6 +8,7 @@ export function MobileBottomNav() {
   const items = [
     { to: "/app", label: t("nav.home"), icon: Home, end: true },
     { to: "/app/deals", label: t("nav.explore"), icon: Search },
+    { to: "/app/deals?view=categories", label: t("action.categories"), icon: LayoutGrid },
     { to: "/app/saved", label: t("nav.saved"), icon: Bookmark },
   ];
   return (

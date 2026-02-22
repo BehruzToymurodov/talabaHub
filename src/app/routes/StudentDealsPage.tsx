@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useSearchParams } from "react-router-dom";
 import { DealCard } from "../../components/cards/DealCard";
 import { DealFilters } from "../../features/deals/DealFilters";
 import { useDeals } from "../../features/deals/useDeals";
@@ -21,6 +22,7 @@ import {
 import { useT } from "../../i18n";
 
 export function StudentDealsPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { deals, loading } = useDeals();
   const user = useAuthStore((state) => state.user);
   const updateUser = useAuthStore((state) => state.updateUser);
@@ -38,6 +40,16 @@ export function StudentDealsPage() {
   });
   const [page, setPage] = useState(1);
   const t = useT();
+
+  useEffect(() => {
+    const nextView = searchParams.get("view");
+    if (nextView === "categories") {
+      setView("categories");
+      setSelectedCategory(null);
+    } else if (nextView === "all") {
+      setView("all");
+    }
+  }, [searchParams]);
 
   const toggleSave = async (dealId: string) => {
     if (!user) return;
@@ -99,6 +111,7 @@ export function StudentDealsPage() {
             onClick={() => {
               setView("categories");
               setSelectedCategory(null);
+              setSearchParams({ view: "categories" });
             }}
           >
             {t("action.categories")}
@@ -108,6 +121,7 @@ export function StudentDealsPage() {
             onClick={() => {
               setView("all");
               setPage(1);
+              setSearchParams({ view: "all" });
             }}
           >
             {t("action.allDeals")}

@@ -63,7 +63,11 @@ export function DashboardPage() {
             </p>
             <h2 className="text-2xl font-semibold">{t("dashboard.title")}</h2>
           </div>
-          <Button asChild variant="ghost">
+          <Button
+            asChild
+            variant="default"
+            className="bg-blue-600 text-white hover:bg-blue-700"
+          >
             <Link to="/app/deals">{t("dashboard.exploreAll")}</Link>
           </Button>
         </div>
