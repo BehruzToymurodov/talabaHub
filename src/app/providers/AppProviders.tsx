@@ -16,7 +16,9 @@ export function AppProviders({ children }: Props) {
   const hydrateLocale = useLocaleStore((state) => state.hydrate);
 
   useEffect(() => {
-    ensureSeedData();
+    if (import.meta.env.VITE_USE_SEED_DATA === "true") {
+      ensureSeedData();
+    }
     hydrateTheme();
     hydrateLocale();
     bootstrap();

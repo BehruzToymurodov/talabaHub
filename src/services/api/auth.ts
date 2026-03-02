@@ -1,107 +1,165 @@
-import type { Session, User } from "../../types";
-import { withLatency } from "../../utils/latency";
-import { readStorage, removeStorage, writeStorage } from "../storage/storage";
+import type { Session, User, VerificationRequest } from "../../types";
+import { apiRequest } from "./client";
+import {
+  clearStoredAuth,
+  getStoredAuth,
+  setAuthUser,
+  setStoredAuth,
+} from "./session";
+import { readStorage, writeStorage } from "../storage/storage";
 import { isStudentEmail } from "../../utils/email";
 
 type RegisterPayload = {
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
-  age: number;
-  universityName: string;
+  first_name: string;
+  last_name: string;
 };
 
-function getUsers() {
-  return readStorage<User[]>("users", []);
+type ApiUserResponse = {
+  id: string;
+  firstName?: string;
+  lastName?: string;
+  email: string;
+  role: "STUDENT" | "MODERATOR" | "ADMIN";
+  studentStatusVerified?: boolean;
+  createdDate?: string;
+};
+
+type AuthResponse = {
+  token: string;
+  user: ApiUserResponse;
+};
+
+type UserProfile = Pick<
+  User,
+  | "username"
+  | "avatarUrl"
+  | "savedDealIds"
+  | "universityName"
+  | "age"
+  | "verificationStatus"
+  | "verification"
+>;
+
+const profileKey = (userId: string) => `userProfile:${userId}`;
+
+function readUserProfile(userId: string): UserProfile | null {
+  return readStorage<UserProfile | null>(profileKey(userId), null);
 }
 
-function saveUsers(users: User[]) {
-  writeStorage("users", users);
+function writeUserProfile(userId: string, profile: UserProfile) {
+  writeStorage(profileKey(userId), profile);
 }
 
-function createSession(userId: string): Session {
+function mapRole(role: ApiUserResponse["role"], verified?: boolean): User["role"] {
+  if (role === "ADMIN" || role === "MODERATOR") return "admin";
+  return verified ? "student_verified" : "student_unverified";
+}
+
+function mapVerificationStatus(
+  role: ApiUserResponse["role"],
+  verified?: boolean
+): User["verificationStatus"] {
+  if (role === "ADMIN" || role === "MODERATOR") return "verified";
+  return verified ? "verified" : "unverified";
+}
+
+function mergeUser(apiUser: ApiUserResponse): User {
+  const profile = readUserProfile(apiUser.id);
+  const role = mapRole(apiUser.role, apiUser.studentStatusVerified);
+  const baseVerificationStatus = mapVerificationStatus(
+    apiUser.role,
+    apiUser.studentStatusVerified
+  );
+  const verificationStatus = profile?.verificationStatus ?? baseVerificationStatus;
+  const verification: VerificationRequest | undefined = profile?.verification;
+
   return {
-    token: `session_${Math.random().toString(36).slice(2)}`,
-    userId,
-    createdAt: new Date().toISOString(),
+    id: apiUser.id,
+    email: apiUser.email,
+    firstName: apiUser.firstName,
+    lastName: apiUser.lastName,
+    role,
+    createdAt: apiUser.createdDate ?? new Date().toISOString(),
+    verificationStatus,
+    verification,
+    username: profile?.username,
+    avatarUrl: profile?.avatarUrl,
+    universityName: profile?.universityName,
+    age: profile?.age,
+    savedDealIds: profile?.savedDealIds ?? [],
   };
 }
 
+function persistProfile(user: User) {
+  writeUserProfile(user.id, {
+    username: user.username,
+    avatarUrl: user.avatarUrl,
+    universityName: user.universityName,
+    age: user.age,
+    savedDealIds: user.savedDealIds,
+    verificationStatus: user.verificationStatus,
+    verification: user.verification,
+  });
+}
+
 export const authApi = {
-  login: async (emailOrUsername: string, password: string) =>
-    withLatency(() => {
-      const identifier = emailOrUsername.trim().toLowerCase();
-      const users = getUsers();
-      const user = users.find(
-        (item) =>
-          item.email.toLowerCase() === identifier ||
-          item.username?.toLowerCase() === identifier
-      );
-      if (!user || user.password !== password) {
-        throw new Error("Invalid email or password");
-      }
-      const session = createSession(user.id);
-      writeStorage("session", session);
-      return { user, session };
-    }),
-  register: async ({ email, password, firstName, lastName, age, universityName }: RegisterPayload) =>
-    withLatency(() => {
-      const users = getUsers();
-      const exists = users.some(
-        (item) => item.email.toLowerCase() === email.toLowerCase()
-      );
-      if (exists) {
-        throw new Error("Email already registered");
-      }
-      if (!isStudentEmail(email)) {
-        throw new Error("Please use a student email address");
-      }
-      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-      const user: User = {
-        id: `user_${Math.random().toString(36).slice(2)}`,
+  login: async (emailOrUsername: string, password: string) => {
+    const identifier = emailOrUsername.trim().toLowerCase();
+    const response = await apiRequest<AuthResponse>("/api/v1/auth/login", {
+      method: "POST",
+      body: {
+        email: identifier,
+        password,
+      },
+    });
+
+    const user = mergeUser(response.user);
+    const session: Session = {
+      token: response.token,
+      userId: user.id,
+      createdAt: new Date().toISOString(),
+    };
+
+    persistProfile(user);
+    setStoredAuth({ token: response.token, user, createdAt: session.createdAt });
+    return { user, session };
+  },
+  register: async ({ email, password, first_name, last_name }: RegisterPayload) => {
+    if (!isStudentEmail(email)) {
+      throw new Error("Please use a student email address");
+    }
+
+    await apiRequest("/api/v1/auth/register", {
+      method: "POST",
+      body: {
         email,
         password,
-        firstName,
-        lastName,
-        username: email.split("@")[0] ?? "",
-        age,
-        universityName,
-        otp: {
-          code: otpCode,
-          sentAt: new Date().toISOString(),
-        },
-        role: "student_unverified",
-        createdAt: new Date().toISOString(),
-        verificationStatus: "unverified",
-        savedDealIds: [],
-      };
-      users.push(user);
-      saveUsers(users);
-      const session = createSession(user.id);
-      writeStorage("session", session);
-      return { user, session };
-    }),
-  logout: async () =>
-    withLatency(() => {
-      removeStorage("session");
-      return true;
-    }, 200),
-  getMe: async () =>
-    withLatency(() => {
-      const session = readStorage<Session | null>("session", null);
-      if (!session) return null;
-      const users = getUsers();
-      const user = users.find((item) => item.id === session.userId) ?? null;
-      return user ? { user, session } : null;
-    }, 200),
-  updateUser: async (user: User) =>
-    withLatency(() => {
-      const users = getUsers();
-      const index = users.findIndex((item) => item.id === user.id);
-      if (index === -1) throw new Error("User not found");
-      users[index] = user;
-      saveUsers(users);
-      return user;
-    }, 200),
+        first_name,
+        last_name,
+      },
+    });
+
+    const loginResponse = await authApi.login(email, password);
+
+    persistProfile(loginResponse.user);
+    setAuthUser(loginResponse.user);
+
+    return { user: loginResponse.user, session: loginResponse.session };
+  },
+  logout: async () => {
+    clearStoredAuth();
+    return true;
+  },
+  getMe: async () => {
+    const stored = getStoredAuth();
+    if (!stored) return null;
+    return { user: stored.user, session: { token: stored.token, userId: stored.user.id, createdAt: stored.createdAt } };
+  },
+  updateUser: async (user: User) => {
+    persistProfile(user);
+    setAuthUser(user);
+    return user;
+  },
 };

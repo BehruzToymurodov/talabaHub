@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://talaba-hub-backend-1013a4d5cf14.herokuapp.com/api/:path*"
+    }
+  ]
+}

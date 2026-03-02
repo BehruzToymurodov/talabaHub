@@ -4,7 +4,7 @@ export type VerificationStatus = "unverified" | "pending" | "verified" | "reject
 export type User = {
   id: string;
   email: string;
-  password: string;
+  password?: string;
   firstName?: string;
   lastName?: string;
   username?: string;
@@ -23,10 +23,10 @@ export type User = {
 };
 
 export type VerificationRequest = {
-  studentEmail: string;
-  universityName: string;
-  studentId: string;
-  proofFilename?: string;
+  universityEmail: string;
+  studyStartDate: string;
+  studyEndDate: string;
+  attachments?: string[];
   status: VerificationStatus;
   submittedAt: string;
   reviewedAt?: string;
@@ -45,7 +45,9 @@ export type DealCategory =
 
 export type Deal = {
   id: string;
+  brandId?: string;
   brand: string;
+  categoryId?: string;
   category: DealCategory;
   title: string;
   titleI18n?: {
@@ -65,6 +67,23 @@ export type Deal = {
   bannerImage?: string;
   eligibleItems?: string;
   branches?: string;
+};
+
+export type VerificationApplication = {
+  id: string;
+  user: {
+    id: string;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+  };
+  universityEmail: string;
+  studyStartDate: string;
+  studyEndDate: string;
+  attachments: string[];
+  status: VerificationStatus;
+  rejectionReason?: string;
+  createdAt: string;
 };
 
 export type Session = {

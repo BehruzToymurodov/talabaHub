@@ -1,22 +1,41 @@
 import { useEffect, useState } from "react";
-import type { Deal, User } from "../../types";
-import { readStorage } from "../../services/storage/storage";
+import { toast } from "sonner";
+import { dealsApi } from "../../services/api/deals";
+import { usersApi } from "../../services/api/users";
+import { verificationApi } from "../../services/api/verification";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
 import { useT } from "../../i18n";
 
 export function AdminDashboardPage() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [deals, setDeals] = useState<Deal[]>([]);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [verifiedUsers, setVerifiedUsers] = useState(0);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [dealCount, setDealCount] = useState(0);
   const t = useT();
 
   useEffect(() => {
-    setUsers(readStorage<User[]>("users", []));
-    setDeals(readStorage<Deal[]>("deals", []));
-  }, []);
+    const fetchSummary = async () => {
+      try {
+        const [usersResponse, pendingApplications, deals] = await Promise.all([
+          usersApi.list(),
+          verificationApi.listPending(),
+          dealsApi.listAdmin(),
+        ]);
 
-  const pending = users.filter((user) => user.verificationStatus === "pending");
-  const verified = users.filter((user) => user.role === "student_verified");
+        setTotalUsers(usersResponse.total);
+        setVerifiedUsers(
+          usersResponse.users.filter((user) => user.studentStatusVerified).length
+        );
+        setPendingCount(pendingApplications.length);
+        setDealCount(deals.length);
+      } catch (error) {
+        toast.error((error as Error).message);
+      }
+    };
+
+    fetchSummary();
+  }, []);
 
   return (
     <div className="container space-y-8 py-10">
@@ -32,7 +51,7 @@ export function AdminDashboardPage() {
             <CardTitle>{t("admin.totalUsers")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-semibold">{users.length}</div>
+            <div className="text-3xl font-semibold">{totalUsers}</div>
           </CardContent>
         </Card>
         <Card>
@@ -40,7 +59,7 @@ export function AdminDashboardPage() {
             <CardTitle>{t("admin.verifiedStudents")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-semibold">{verified.length}</div>
+            <div className="text-3xl font-semibold">{verifiedUsers}</div>
           </CardContent>
         </Card>
         <Card>
@@ -48,8 +67,8 @@ export function AdminDashboardPage() {
             <CardTitle>{t("admin.pending")}</CardTitle>
           </CardHeader>
           <CardContent className="flex items-center gap-2">
-            <div className="text-3xl font-semibold">{pending.length}</div>
-            {pending.length > 0 && <Badge variant="warning">{t("admin.review")}</Badge>}
+            <div className="text-3xl font-semibold">{pendingCount}</div>
+            {pendingCount > 0 && <Badge variant="warning">{t("admin.review")}</Badge>}
           </CardContent>
         </Card>
         <Card>
@@ -57,7 +76,7 @@ export function AdminDashboardPage() {
             <CardTitle>{t("admin.dealsLive")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-semibold">{deals.length}</div>
+            <div className="text-3xl font-semibold">{dealCount}</div>
           </CardContent>
         </Card>
       </div>

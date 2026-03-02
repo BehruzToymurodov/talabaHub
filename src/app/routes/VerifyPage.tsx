@@ -5,39 +5,46 @@ import { verificationApi } from "../../services/api/verification";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Label } from "../../components/ui/label";
 import { Input } from "../../components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../components/ui/select";
 import { Button } from "../../components/ui/button";
 import { useT } from "../../i18n";
-import { universities } from "../../data/universities";
 
 export function VerifyPage() {
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
   const t = useT();
 
-  const [studentEmail, setStudentEmail] = useState(user?.email ?? "");
-  const [universityName, setUniversityName] = useState("");
-  const [studentId, setStudentId] = useState("");
-  const [proofFilename, setProofFilename] = useState("");
+  const [universityEmail, setUniversityEmail] = useState(user?.email ?? "");
+  const [middleName, setMiddleName] = useState("");
+  const [studyStartDate, setStudyStartDate] = useState("");
+  const [studyEndDate, setStudyEndDate] = useState("");
+  const [attachmentsInput, setAttachmentsInput] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
     if (!user) return;
+    if (!universityEmail || !studyStartDate || !studyEndDate) {
+      toast.error(t("toast.completeFields"));
+      return;
+    }
     setLoading(true);
     try {
-      const updated = await verificationApi.submit(user.id, {
-        studentEmail,
-        universityName,
-        studentId,
-        proofFilename,
+      const verification = await verificationApi.submit({
+        first_name: user.firstName ?? "",
+        last_name: user.lastName ?? "",
+        middle_name: middleName.trim() || undefined,
+        university_email: universityEmail,
+        study_start_date: studyStartDate,
+        study_end_date: studyEndDate,
+        attachments: attachmentsInput
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean),
       });
-      setUser(updated);
+      setUser({
+        ...user,
+        verificationStatus: verification.status,
+        verification,
+      });
       toast.success(t("toast.verificationSubmitted"));
     } catch (error) {
       toast.error((error as Error).message);
@@ -70,40 +77,43 @@ export function VerifyPage() {
             <Label htmlFor="studentEmail">{t("label.studentEmail")}</Label>
             <Input
               id="studentEmail"
-              value={studentEmail}
-              onChange={(event) => setStudentEmail(event.target.value)}
+              value={universityEmail}
+              onChange={(event) => setUniversityEmail(event.target.value)}
             />
           </div>
           <div className="space-y-2">
-            <Label>{t("label.university")}</Label>
-            <Select value={universityName} onValueChange={setUniversityName}>
-              <SelectTrigger>
-                <SelectValue placeholder={t("label.university")} />
-              </SelectTrigger>
-              <SelectContent>
-                {universities.map((uni) => (
-                  <SelectItem key={uni} value={uni}>
-                    {uni}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="studentId">{t("label.studentId")}</Label>
+            <Label htmlFor="middleName">{t("label.middleName")}</Label>
             <Input
-              id="studentId"
-              value={studentId}
-              onChange={(event) => setStudentId(event.target.value)}
+              id="middleName"
+              value={middleName}
+              onChange={(event) => setMiddleName(event.target.value)}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="proof">{t("label.proof")}</Label>
+            <Label htmlFor="studyStartDate">{t("label.studyStartDate")}</Label>
             <Input
-              id="proof"
-              value={proofFilename}
-              onChange={(event) => setProofFilename(event.target.value)}
-              placeholder={t("verify.placeholderProof")}
+              id="studyStartDate"
+              type="date"
+              value={studyStartDate}
+              onChange={(event) => setStudyStartDate(event.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="studyEndDate">{t("label.studyEndDate")}</Label>
+            <Input
+              id="studyEndDate"
+              type="date"
+              value={studyEndDate}
+              onChange={(event) => setStudyEndDate(event.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="attachments">{t("label.attachments")}</Label>
+            <Input
+              id="attachments"
+              value={attachmentsInput}
+              onChange={(event) => setAttachmentsInput(event.target.value)}
+              placeholder="https://storage.com/id_front.jpg, https://storage.com/id_back.jpg"
             />
           </div>
           <Button onClick={handleSubmit} disabled={loading} size="lg">

@@ -775,9 +775,10 @@ const seedUsers: User[] = [
 		createdAt: '2025-09-01',
 		verificationStatus: 'verified',
 		verification: {
-			studentEmail: 'b.toymurodov@student.inha.uz',
-			universityName: 'INHA University in Tashkent',
-			studentId: 'U2310268',
+			universityEmail: 'b.toymurodov@student.inha.uz',
+			studyStartDate: '2021-09-01',
+			studyEndDate: '2025-06-30',
+			attachments: ['https://storage.com/inha_id.pdf'],
 			status: 'verified',
 			submittedAt: '2025-09-02',
 			reviewedAt: '2025-09-03',
@@ -858,8 +859,8 @@ export function ensureSeedData() {
 			existing.password !== updated.password ||
 			existing.role !== updated.role ||
 			existing.verificationStatus !== updated.verificationStatus ||
-			existing.verification?.studentEmail !==
-				updated.verification?.studentEmail
+			existing.verification?.universityEmail !==
+				updated.verification?.universityEmail
 		if (!changed) return { users: current, changed: false }
 		const next = [...current]
 		next[index] = updated

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import type { User } from "../../types";
+import type { VerificationApplication } from "../../types";
 import { verificationApi } from "../../services/api/verification";
 import { Card, CardContent } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
@@ -8,7 +8,7 @@ import { EmptyState } from "../../components/feedback/EmptyState";
 import { useT } from "../../i18n";
 
 export function AdminVerificationsPage() {
-  const [pending, setPending] = useState<User[]>([]);
+  const [pending, setPending] = useState<VerificationApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const t = useT();
 
@@ -28,14 +28,14 @@ export function AdminVerificationsPage() {
     fetchPending();
   }, []);
 
-  const handleApprove = async (userId: string) => {
-    await verificationApi.approve(userId);
+  const handleApprove = async (applicationId: string) => {
+    await verificationApi.approve(applicationId);
     toast.success(t("toast.approved"));
     fetchPending();
   };
 
-  const handleReject = async (userId: string) => {
-    await verificationApi.reject(userId, t("admin.rejectReason"));
+  const handleReject = async (applicationId: string) => {
+    await verificationApi.reject(applicationId, t("admin.rejectReason"));
     toast(t("toast.rejected"));
     fetchPending();
   };
@@ -57,20 +57,20 @@ export function AdminVerificationsPage() {
         />
       ) : (
         <div className="grid gap-4">
-          {pending.map((user) => (
-            <Card key={user.id}>
+          {pending.map((application) => (
+            <Card key={application.id}>
               <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <p className="text-sm font-semibold">{user.email}</p>
+                  <p className="text-sm font-semibold">{application.user.email}</p>
                   <p className="text-xs text-muted-foreground">
-                    {user.verification?.universityName ?? t("admin.university")} · {user.verification?.studentId}
+                    {application.universityEmail}
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => handleReject(user.id)}>
+                  <Button variant="outline" onClick={() => handleReject(application.id)}>
                     {t("action.reject")}
                   </Button>
-                  <Button onClick={() => handleApprove(user.id)}>
+                  <Button onClick={() => handleApprove(application.id)}>
                     {t("action.approve")}
                   </Button>
                 </div>

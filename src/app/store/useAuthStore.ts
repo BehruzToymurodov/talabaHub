@@ -11,10 +11,8 @@ type AuthState = {
   register: (payload: {
     email: string;
     password: string;
-    firstName: string;
-    lastName: string;
-    age: number;
-    universityName: string;
+    first_name: string;
+    last_name: string;
   }) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (user: User) => Promise<void>;
