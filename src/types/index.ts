@@ -65,6 +65,7 @@ export type Deal = {
   redemptionUrl?: string;
   image?: string;
   bannerImage?: string;
+  usageSteps?: string;
   eligibleItems?: string;
   branches?: string;
 };
