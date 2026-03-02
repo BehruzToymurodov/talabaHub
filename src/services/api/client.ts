@@ -1,6 +1,7 @@
 import { getAuthToken } from './session'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.trim() || '/api'
+const API_BASE_URL =
+	import.meta.env.VITE_API_BASE_URL?.trim() || 'https://api.talabahub.uz'
 
 type QueryValue = string | number | boolean | null | undefined
 
@@ -38,8 +39,10 @@ function buildUrl(path: string, query?: RequestOptions['query']) {
 
 	const base = API_BASE_URL.replace(/\/+$/, '')
 	const apiPrefix = '/api'
-	const normalizedPath = path.startsWith(apiPrefix)
-		? path.slice(apiPrefix.length) || '/'
+	const normalizedPath = base.endsWith(apiPrefix)
+		? path.startsWith(apiPrefix)
+			? path.slice(apiPrefix.length) || '/'
+			: path
 		: path
 	return `${base}${normalizedPath}${buildQuery(query)}`
 }
