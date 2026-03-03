@@ -1,7 +1,7 @@
 import { getAuthToken } from './session'
 
 const API_BASE_URL =
-	import.meta.env.VITE_API_BASE_URL?.trim() || 'https://api.talabahub.uz'
+	import.meta.env.VITE_API_BASE_URL?.trim() || 'https://api.talabahub.uz/api'
 
 type QueryValue = string | number | boolean | null | undefined
 
