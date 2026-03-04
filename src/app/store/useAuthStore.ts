@@ -13,7 +13,7 @@ type AuthState = {
     password: string;
     first_name: string;
     last_name: string;
-  }) => Promise<void>;
+  }) => Promise<{ message?: string }>;
   logout: () => Promise<void>;
   updateUser: (user: User) => Promise<void>;
   setUser: (user: User | null) => void;
@@ -51,7 +51,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ loading: true, error: null });
     try {
       const response = await authApi.register(payload);
-      set({ user: response.user });
+      return response;
     } catch (error) {
       set({ error: (error as Error).message });
       throw error;

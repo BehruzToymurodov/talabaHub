@@ -34,6 +34,7 @@ export function AuthPage() {
 	const [registerLastName, setRegisterLastName] = useState('')
 	const [registerEmail, setRegisterEmail] = useState('')
 	const [registerPassword, setRegisterPassword] = useState('')
+	const [activeTab, setActiveTab] = useState<'login' | 'register'>('login')
 
 	useEffect(() => {
 		if (!user) return
@@ -71,15 +72,17 @@ export function AuthPage() {
 				toast.error(t('toast.completeFields'))
 				return
 			}
-			await register({
+			const response = await register({
 				first_name: registerFirstName.trim(),
 				last_name: registerLastName.trim(),
 				email: registerEmail.trim(),
 				password: registerPassword,
 			})
-			toast.success(t('toast.accountCreated'))
-			toast.success(t('toast.otpSent', { email: registerEmail.trim() }))
-			navigate('/app', { replace: true })
+			toast.success(response?.message ?? t('toast.accountCreated'))
+			setLoginEmail(registerEmail.trim())
+			setLoginPassword('')
+			setRegisterPassword('')
+			setActiveTab('login')
 		} catch (error) {
 			toast.error((error as Error).message)
 		}
@@ -93,7 +96,11 @@ export function AuthPage() {
 					<p className='text-sm text-muted-foreground'>{t('auth.subtitle')}</p>
 				</CardHeader>
 				<CardContent>
-					<Tabs defaultValue='login' className='space-y-6'>
+					<Tabs
+						value={activeTab}
+						onValueChange={value => setActiveTab(value as 'login' | 'register')}
+						className='space-y-6'
+					>
 						<TabsList className='grid w-full grid-cols-2'>
 							<TabsTrigger value='login'>{t('auth.login')}</TabsTrigger>
 							<TabsTrigger value='register'>{t('auth.register')}</TabsTrigger>
