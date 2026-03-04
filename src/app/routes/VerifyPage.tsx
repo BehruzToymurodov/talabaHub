@@ -13,35 +13,49 @@ export function VerifyPage() {
   const setUser = useAuthStore((state) => state.setUser);
   const t = useT();
 
+  const [firstName, setFirstName] = useState(user?.firstName ?? "");
+  const [lastName, setLastName] = useState(user?.lastName ?? "");
+  const [studentIdNumber, setStudentIdNumber] = useState("");
+  const [universityName, setUniversityName] = useState(user?.universityName ?? "");
   const [universityEmail, setUniversityEmail] = useState(user?.email ?? "");
   const [middleName, setMiddleName] = useState("");
   const [studyStartDate, setStudyStartDate] = useState("");
   const [studyEndDate, setStudyEndDate] = useState("");
-  const [attachmentsInput, setAttachmentsInput] = useState("");
+  const [attachments, setAttachments] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
     if (!user) return;
-    if (!universityEmail || !studyStartDate || !studyEndDate) {
+    if (
+      !firstName ||
+      !lastName ||
+      !studentIdNumber ||
+      !universityName ||
+      !universityEmail ||
+      !studyStartDate ||
+      !studyEndDate
+    ) {
       toast.error(t("toast.completeFields"));
       return;
     }
     setLoading(true);
     try {
       const verification = await verificationApi.submit({
-        first_name: user.firstName ?? "",
-        last_name: user.lastName ?? "",
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
         middle_name: middleName.trim() || undefined,
+        student_id_number: studentIdNumber.trim(),
+        university_name: universityName.trim(),
         university_email: universityEmail,
         study_start_date: studyStartDate,
         study_end_date: studyEndDate,
-        attachments: attachmentsInput
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean),
+        attachments: attachments.map((file) => file.name),
       });
       setUser({
         ...user,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        universityName: universityName.trim(),
         verificationStatus: verification.status,
         verification,
       });
@@ -73,6 +87,42 @@ export function VerifyPage() {
               {t("verify.verified")}
             </div>
           )}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="firstName">{t("label.firstName")}</Label>
+              <Input
+                id="firstName"
+                value={firstName}
+                onChange={(event) => setFirstName(event.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lastName">{t("label.lastName")}</Label>
+              <Input
+                id="lastName"
+                value={lastName}
+                onChange={(event) => setLastName(event.target.value)}
+              />
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="studentIdNumber">{t("label.studentId")}</Label>
+              <Input
+                id="studentIdNumber"
+                value={studentIdNumber}
+                onChange={(event) => setStudentIdNumber(event.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="universityName">{t("label.university")}</Label>
+              <Input
+                id="universityName"
+                value={universityName}
+                onChange={(event) => setUniversityName(event.target.value)}
+              />
+            </div>
+          </div>
           <div className="space-y-2">
             <Label htmlFor="studentEmail">{t("label.studentEmail")}</Label>
             <Input
@@ -111,10 +161,17 @@ export function VerifyPage() {
             <Label htmlFor="attachments">{t("label.attachments")}</Label>
             <Input
               id="attachments"
-              value={attachmentsInput}
-              onChange={(event) => setAttachmentsInput(event.target.value)}
-              placeholder="https://storage.com/id_front.jpg, https://storage.com/id_back.jpg"
+              type="file"
+              multiple
+              onChange={(event) =>
+                setAttachments(event.target.files ? Array.from(event.target.files) : [])
+              }
             />
+            {attachments.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                {attachments.map((file) => file.name).join(", ")}
+              </p>
+            )}
           </div>
           <Button onClick={handleSubmit} disabled={loading} size="lg">
             {loading ? t("action.submitting") : t("action.submitVerification")}

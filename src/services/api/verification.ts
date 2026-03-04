@@ -48,6 +48,8 @@ type SubmitPayload = {
   first_name: string;
   last_name: string;
   middle_name?: string;
+  student_id_number: string;
+  university_name: string;
   university_email: string;
   study_start_date: string;
   study_end_date: string;
@@ -79,13 +81,15 @@ export const verificationApi = {
       {
         method: "POST",
         body: {
-          first_name: payload.first_name,
-          last_name: payload.last_name,
-          middle_name: payload.middle_name,
-          university_email: payload.university_email,
-          study_start_date: payload.study_start_date,
-          study_end_date: payload.study_end_date,
-          attachments: payload.attachments ?? [],
+        first_name: payload.first_name,
+        last_name: payload.last_name,
+        middle_name: payload.middle_name,
+        student_id_number: payload.student_id_number,
+        university_name: payload.university_name,
+        university_email: payload.university_email,
+        study_start_date: payload.study_start_date,
+        study_end_date: payload.study_end_date,
+        attachments: payload.attachments ?? [],
         },
       }
     );
