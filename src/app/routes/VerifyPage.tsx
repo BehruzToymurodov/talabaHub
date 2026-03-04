@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAuthStore } from "../store/useAuthStore";
 import { verificationApi } from "../../services/api/verification";
+import { universitiesApi, type University } from "../../services/api/universities";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Label } from "../../components/ui/label";
 import { Input } from "../../components/ui/input";
@@ -23,6 +24,80 @@ export function VerifyPage() {
   const [studyEndDate, setStudyEndDate] = useState("");
   const [attachments, setAttachments] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
+  const [universityOpen, setUniversityOpen] = useState(false);
+  const [universityQuery, setUniversityQuery] = useState(user?.universityName ?? "");
+  const [universityOptions, setUniversityOptions] = useState<University[]>([]);
+  const [universityPage, setUniversityPage] = useState(0);
+  const [universityHasMore, setUniversityHasMore] = useState(true);
+  const [universityLoading, setUniversityLoading] = useState(false);
+  const [debouncedQuery, setDebouncedQuery] = useState(universityQuery);
+  const universityRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(universityQuery.trim());
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [universityQuery]);
+
+  useEffect(() => {
+    setUniversityPage(0);
+  }, [debouncedQuery]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const load = async () => {
+      setUniversityLoading(true);
+      try {
+        const response = await universitiesApi.list({
+          search: debouncedQuery,
+          page: universityPage,
+          size: universitiesApi.pageSize,
+        });
+        if (!isActive) return;
+        setUniversityOptions((prev) =>
+          universityPage === 0 ? response.content : [...prev, ...response.content]
+        );
+        const hasMoreByPage =
+          typeof response.totalPages === "number"
+            ? universityPage + 1 < response.totalPages
+            : response.content.length >= universitiesApi.pageSize;
+        setUniversityHasMore(hasMoreByPage);
+      } catch (error) {
+        if (!isActive) return;
+        toast.error((error as Error).message);
+        setUniversityHasMore(false);
+      } finally {
+        if (isActive) setUniversityLoading(false);
+      }
+    };
+
+    load();
+
+    return () => {
+      isActive = false;
+    };
+  }, [debouncedQuery, universityPage]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!universityRef.current) return;
+      if (!universityRef.current.contains(event.target as Node)) {
+        setUniversityOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const normalizedQuery = universityQuery.trim().toLowerCase();
+  const filteredUniversities = useMemo(() => {
+    if (!normalizedQuery) return universityOptions;
+    return universityOptions.filter((university) =>
+      university.name.toLowerCase().includes(normalizedQuery)
+    );
+  }, [normalizedQuery, universityOptions]);
 
   const handleSubmit = async () => {
     if (!user) return;
@@ -114,13 +189,69 @@ export function VerifyPage() {
                 onChange={(event) => setStudentIdNumber(event.target.value)}
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2" ref={universityRef}>
               <Label htmlFor="universityName">{t("label.university")}</Label>
-              <Input
-                id="universityName"
-                value={universityName}
-                onChange={(event) => setUniversityName(event.target.value)}
-              />
+              <div className="relative">
+                <Input
+                  id="universityName"
+                  value={universityQuery}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setUniversityQuery(value);
+                    setUniversityName(value);
+                  }}
+                  onFocus={() => setUniversityOpen(true)}
+                  placeholder={t("verify.universityPlaceholder")}
+                  autoComplete="off"
+                />
+                {universityOpen && (
+                  <div className="absolute z-20 mt-2 w-full rounded-2xl border border-border bg-background shadow-lg">
+                    <div className="max-h-64 overflow-y-auto py-2">
+                      {universityLoading && universityOptions.length === 0 && (
+                        <p className="px-4 py-2 text-xs text-muted-foreground">
+                          {t("label.loading")}
+                        </p>
+                      )}
+                      {!universityLoading && filteredUniversities.length === 0 && (
+                        <p className="px-4 py-2 text-xs text-muted-foreground">
+                          {t("verify.universityEmpty")}
+                        </p>
+                      )}
+                      {filteredUniversities.map((university) => (
+                        <button
+                          key={university.id}
+                          type="button"
+                          className="flex w-full items-center justify-between px-4 py-2 text-left text-sm transition hover:bg-muted/70"
+                          onClick={() => {
+                            setUniversityName(university.name);
+                            setUniversityQuery(university.name);
+                            setUniversityOpen(false);
+                          }}
+                        >
+                          <span>{university.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                    {universityHasMore && (
+                      <div className="border-t border-border px-3 py-2">
+                        <button
+                          type="button"
+                          className="text-xs font-semibold text-primary"
+                          onClick={() => setUniversityPage((prev) => prev + 1)}
+                          disabled={universityLoading}
+                        >
+                          {universityLoading
+                            ? t("label.loading")
+                            : t("verify.universityLoadMore")}
+                        </button>
+                      </div>
+                    )}
+                    <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
+                      {t("verify.universityHint")}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           <div className="space-y-2">
