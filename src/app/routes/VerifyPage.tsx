@@ -124,7 +124,7 @@ export function VerifyPage() {
         university_email: universityEmail,
         study_start_date: studyStartDate,
         study_end_date: studyEndDate,
-        attachments: attachments.map((file) => file.name),
+        attachments,
       });
       setUser({
         ...user,
