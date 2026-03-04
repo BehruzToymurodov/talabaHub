@@ -53,7 +53,7 @@ type SubmitPayload = {
   university_email: string;
   study_start_date: string;
   study_end_date: string;
-  attachments?: string[];
+  attachments?: File[];
 };
 
 function mapStatus(status: ApplicationResponse["status"]): VerificationStatus {
@@ -76,21 +76,26 @@ function mapDetail(detail: ApplicationDetailResponse): VerificationApplication {
 
 export const verificationApi = {
   submit: async (payload: SubmitPayload): Promise<VerificationRequest> => {
+    const formData = new FormData();
+    formData.append("first_name", payload.first_name);
+    formData.append("last_name", payload.last_name);
+    if (payload.middle_name) {
+      formData.append("middle_name", payload.middle_name);
+    }
+    formData.append("student_id_number", payload.student_id_number);
+    formData.append("university_name", payload.university_name);
+    formData.append("university_email", payload.university_email);
+    formData.append("study_start_date", payload.study_start_date);
+    formData.append("study_end_date", payload.study_end_date);
+    (payload.attachments ?? []).forEach((file) => {
+      formData.append("attachments", file);
+    });
+
     const response = await apiRequest<ApplicationResponse>(
       "/api/v1/student/applications",
       {
         method: "POST",
-        body: {
-        first_name: payload.first_name,
-        last_name: payload.last_name,
-        middle_name: payload.middle_name,
-        student_id_number: payload.student_id_number,
-        university_name: payload.university_name,
-        university_email: payload.university_email,
-        study_start_date: payload.study_start_date,
-        study_end_date: payload.study_end_date,
-        attachments: payload.attachments ?? [],
-        },
+        body: formData,
       }
     );
 
@@ -98,7 +103,7 @@ export const verificationApi = {
       universityEmail: payload.university_email,
       studyStartDate: payload.study_start_date,
       studyEndDate: payload.study_end_date,
-      attachments: payload.attachments ?? [],
+      attachments: (payload.attachments ?? []).map((file) => file.name),
       status: mapStatus(response.status),
       submittedAt: response.createdDate ?? new Date().toISOString(),
       reviewReason: response.rejectionReason,
