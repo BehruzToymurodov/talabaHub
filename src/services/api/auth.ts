@@ -30,6 +30,9 @@ type AuthResponse = {
   token: string;
   user: ApiUserResponse;
 };
+type RegisterResponse = {
+  message?: string;
+};
 
 type UserProfile = Pick<
   User,
@@ -131,7 +134,7 @@ export const authApi = {
       throw new Error("Please use a student email address");
     }
 
-    await apiRequest("/api/v1/auth/register", {
+    const response = await apiRequest<RegisterResponse>("/api/v1/auth/register", {
       method: "POST",
       body: {
         email,
@@ -140,13 +143,7 @@ export const authApi = {
         last_name,
       },
     });
-
-    const loginResponse = await authApi.login(email, password);
-
-    persistProfile(loginResponse.user);
-    setAuthUser(loginResponse.user);
-
-    return { user: loginResponse.user, session: loginResponse.session };
+    return { message: response?.message };
   },
   logout: async () => {
     clearStoredAuth();
