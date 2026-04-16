@@ -38,9 +38,10 @@ function persistFeatured(dealId: string, featured: boolean | undefined) {
   writeFeaturedMap(featuredMap);
 }
 
-function mapCategory(name?: string): DealCategory {
+function mapCategory(category?: ApiCategory): DealCategory {
+  const name = category?.parentName ?? category?.parent_name ?? category?.name;
   if (!name) return "Food & Drink";
-  const match = knownCategories.find((category) => category === name);
+  const match = knownCategories.find((knownCategory) => knownCategory === name);
   return match ?? "Food & Drink";
 }
 
@@ -59,6 +60,10 @@ type ApiBrandListing = {
 type ApiCategory = {
   id: string;
   name: string;
+  parentId?: string;
+  parent_id?: string;
+  parentName?: string;
+  parent_name?: string;
 };
 
 type DealPublicListingResponse = {
@@ -177,7 +182,8 @@ function mapPublicListing(deal: DealPublicListingResponse): Deal {
     brandId: deal.brand?.id,
     brand: deal.brand?.name ?? "",
     categoryId: deal.category?.id,
-    category: mapCategory(deal.category?.name),
+    categoryName: deal.category?.name,
+    category: mapCategory(deal.category),
     title: deal.title ?? "",
     description: "",
     terms: "",
@@ -199,7 +205,8 @@ function mapPublicDetail(deal: DealDetailResponse): Deal {
     brandId: deal.brand?.id,
     brand: deal.brand?.name ?? "",
     categoryId: deal.category?.id,
-    category: mapCategory(deal.category?.name),
+    categoryName: deal.category?.name,
+    category: mapCategory(deal.category),
     title: deal.title ?? "",
     description: deal.description ?? "",
     terms: deal.terms ?? "",
@@ -223,7 +230,8 @@ function mapAdminList(deal: ManagementDealListResponse): Deal {
     brandId: deal.brand?.id,
     brand: deal.brand?.name ?? "",
     categoryId: deal.category?.id,
-    category: mapCategory(deal.category?.name),
+    categoryName: deal.category?.name,
+    category: mapCategory(deal.category),
     title: deal.title ?? "",
     description: "",
     terms: "",
@@ -246,7 +254,8 @@ function mapAdminDetail(deal: ManagementDealDetailResponse): Deal {
     brandId: deal.brand?.id,
     brand: deal.brand?.name ?? "",
     categoryId: deal.category?.id,
-    category: mapCategory(deal.category?.name),
+    categoryName: deal.category?.name,
+    category: mapCategory(deal.category),
     title: deal.title ?? "",
     description: deal.description ?? "",
     terms: deal.terms ?? "",

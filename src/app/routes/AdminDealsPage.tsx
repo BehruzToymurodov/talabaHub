@@ -28,6 +28,7 @@ import { useT } from "../../i18n";
 import { useLocaleStore } from "../store/useLocaleStore";
 import { getDealTitle } from "../../utils/dealText";
 import { resolveAssetPath } from "../../utils/assets";
+import { getCategoryDealCategory } from "../../features/deals/categoryTree";
 
 const emptyDeal: Deal = {
   id: "",
@@ -58,6 +59,9 @@ export function AdminDealsPage() {
   const isEditing = deals.some((deal) => deal.id === draft.id);
   const t = useT();
   const locale = useLocaleStore((state) => state.locale);
+
+  const getCategoryDisplayName = (category: CategoryOption) =>
+    category.parentName ? `${category.parentName} / ${category.name}` : category.name;
 
   const fetchDeals = async () => {
     setLoading(true);
@@ -102,7 +106,8 @@ export function AdminDealsPage() {
       brandId: defaultBrand?.id ?? "",
       brand: defaultBrand?.name ?? "",
       categoryId: defaultCategory?.id ?? "",
-      category: (defaultCategory?.name as Deal["category"]) ?? "Food & Drink",
+      category: defaultCategory ? getCategoryDealCategory(defaultCategory) : "Food & Drink",
+      categoryName: defaultCategory?.name ?? "",
       image: defaultBrand?.logoUrl ?? "",
     });
     setOpen(true);
@@ -245,7 +250,10 @@ export function AdminDealsPage() {
                     setDraft({
                       ...draft,
                       categoryId: value,
-                      category: (selected?.name as Deal["category"]) ?? draft.category,
+                      category: selected
+                        ? getCategoryDealCategory(selected)
+                        : draft.category,
+                      categoryName: selected?.name ?? draft.categoryName,
                     });
                   }}
                 >
@@ -255,7 +263,7 @@ export function AdminDealsPage() {
                   <SelectContent>
                     {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
-                        {category.name}
+                        {getCategoryDisplayName(category)}
                       </SelectItem>
                     ))}
                   </SelectContent>
