@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useSearchParams } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { DealCard } from "../../components/cards/DealCard";
 import { DealFilters } from "../../features/deals/DealFilters";
 import { useDeals } from "../../features/deals/useDeals";
@@ -8,7 +9,6 @@ import { filterDeals } from "../../features/deals/utils";
 import { Skeleton } from "../../components/ui/skeleton";
 import { EmptyState } from "../../components/feedback/EmptyState";
 import { useAuthStore } from "../store/useAuthStore";
-import { dealCategories, categoryLabelKeys } from "../../features/deals/constants";
 import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
 import {
@@ -20,14 +20,23 @@ import {
   PaginationPrevious,
 } from "../../components/ui/pagination";
 import { useT } from "../../i18n";
+import {
+  buildCategoryTree,
+  getDealsForCategorySelection,
+  type CategoryTreeItem,
+} from "../../features/deals/categoryTree";
+import { useCategories } from "../../features/deals/useCategories";
+import { resolveAssetPath } from "../../utils/assets";
 
 export function StudentDealsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { deals, loading } = useDeals();
+  const { deals, loading: dealsLoading } = useDeals();
+  const { categories, loading: categoriesLoading } = useCategories();
   const user = useAuthStore((state) => state.user);
   const updateUser = useAuthStore((state) => state.updateUser);
   const [view, setView] = useState<"categories" | "all">("all");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
+  const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
   const [filters, setFilters] = useState({
     search: "",
     category: "All",
@@ -45,7 +54,8 @@ export function StudentDealsPage() {
     const nextView = searchParams.get("view");
     if (nextView === "categories") {
       setView("categories");
-      setSelectedCategory(null);
+      setSelectedParentId(null);
+      setSelectedChildId(null);
     } else {
       setView("all");
       setPage(1);
@@ -66,22 +76,33 @@ export function StudentDealsPage() {
     }
   };
 
-  const categoriesWithCount = useMemo(() => {
-    return dealCategories.map((category) => ({
-      name: category,
-      count: deals.filter((deal) => deal.category === category).length,
-    }));
-  }, [deals]);
+  const categoryTree = useMemo(
+    () => buildCategoryTree(categories, deals),
+    [categories, deals]
+  );
+
+  const selectedParent = useMemo(
+    () => categoryTree.find((category) => category.id === selectedParentId) ?? null,
+    [categoryTree, selectedParentId]
+  );
+
+  const selectedChild = useMemo(
+    () =>
+      selectedParent?.children.find((category) => category.id === selectedChildId) ??
+      null,
+    [selectedParent, selectedChildId]
+  );
+
+  const activeCategory = selectedChild ?? selectedParent;
 
   const categoryDeals = useMemo(() => {
-    if (!selectedCategory) return [];
-    const scoped = deals.filter((deal) => deal.category === selectedCategory);
+    const scoped = getDealsForCategorySelection(deals, activeCategory);
     return filterDeals(scoped, {
       search: categoryFilters.search,
       category: "All",
       sort: categoryFilters.sort,
     });
-  }, [deals, selectedCategory, categoryFilters]);
+  }, [deals, activeCategory, categoryFilters]);
 
   const groupedByBrand = useMemo(() => {
     const grouped: Record<string, typeof categoryDeals> = {};
@@ -96,6 +117,76 @@ export function StudentDealsPage() {
   const allFiltered = useMemo(() => filterDeals(deals, filters), [deals, filters]);
   const totalPages = Math.max(1, Math.ceil(allFiltered.length / pageSize));
   const paged = allFiltered.slice((page - 1) * pageSize, page * pageSize);
+  const isLoading = dealsLoading || categoriesLoading;
+
+  const renderParentCard = (category: CategoryTreeItem) => {
+    const image = resolveAssetPath(category.attachmentUrl, "banners");
+    return (
+      <button
+        key={category.id}
+        className="group relative min-h-[220px] overflow-hidden rounded-[28px] border border-border text-left text-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
+        onClick={() => {
+          setSelectedParentId(category.id);
+          setSelectedChildId(null);
+          setCategoryFilters((prev) => ({ ...prev, search: "" }));
+        }}
+      >
+        {image ? (
+          <img
+            src={image}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
+          />
+        ) : null}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
+        <div className="absolute inset-x-0 bottom-0 space-y-2 p-6">
+          <Badge variant="secondary" className="bg-white/90 text-slate-900">
+            {category.count} {t("nav.deals")}
+          </Badge>
+          <h2 className="text-2xl font-semibold">{category.name}</h2>
+          {category.children.length > 0 ? (
+            <p className="text-sm text-white/80">
+              {category.children.length} subcategories
+            </p>
+          ) : null}
+        </div>
+      </button>
+    );
+  };
+
+  const renderChildCard = (category: CategoryTreeItem) => {
+    const image = resolveAssetPath(category.attachmentUrl, "banners");
+    const isActive = selectedChild?.id === category.id;
+    return (
+      <button
+        key={category.id}
+        className={`group relative min-h-[150px] overflow-hidden rounded-2xl border text-left transition ${
+          isActive
+            ? "border-primary shadow-lg"
+            : "border-border shadow-sm hover:-translate-y-1 hover:shadow-md"
+        }`}
+        onClick={() => {
+          setSelectedChildId(category.id);
+          setCategoryFilters((prev) => ({ ...prev, search: "" }));
+        }}
+      >
+        {image ? (
+          <img
+            src={image}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
+          />
+        ) : null}
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/75 to-background/15" />
+        <div className="relative flex h-full flex-col justify-end gap-2 p-5">
+          <p className="text-lg font-semibold">{category.name}</p>
+          <p className="text-sm text-muted-foreground">
+            {category.count} {t("nav.deals")}
+          </p>
+        </div>
+      </button>
+    );
+  };
 
   return (
     <div className="container space-y-6 py-10">
@@ -111,7 +202,8 @@ export function StudentDealsPage() {
             variant={view === "categories" ? "default" : "outline"}
             onClick={() => {
               setView("categories");
-              setSelectedCategory(null);
+              setSelectedParentId(null);
+              setSelectedChildId(null);
               setSearchParams({ view: "categories" });
             }}
           >
@@ -130,52 +222,89 @@ export function StudentDealsPage() {
         </div>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, index) => (
-            <Skeleton key={index} className="h-72 w-full" />
+            <Skeleton key={index} className="h-72 w-full rounded-[28px]" />
           ))}
         </div>
       ) : view === "categories" ? (
-        !selectedCategory ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {categoriesWithCount.map((category) => (
-              <button
-                key={category.name}
-                className="flex flex-col items-start gap-2 rounded-2xl border border-border bg-card p-5 text-left transition hover:-translate-y-1 hover:shadow-md"
-                onClick={() => {
-                  setSelectedCategory(category.name);
-                  setCategoryFilters((prev) => ({ ...prev, search: "" }));
-                }}
-              >
-                <p className="text-sm font-semibold">
-                  {t(categoryLabelKeys[category.name as keyof typeof categoryLabelKeys])}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {category.count} {t("nav.deals")}
-                </p>
-              </button>
-            ))}
+        !selectedParent ? (
+          <div className="grid gap-5 lg:grid-cols-2">
+            {categoryTree.map(renderParentCard)}
           </div>
         ) : (
           <div className="space-y-6">
-            <div className="flex flex-wrap items-center gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setSelectedCategory(null)}
-              >
-                {t("action.backToCategories")}
-              </Button>
-              <Badge variant="secondary">
-                {selectedCategory
-                  ? t(
-                      categoryLabelKeys[
-                        selectedCategory as keyof typeof categoryLabelKeys
-                      ]
-                    )
-                  : null}
-              </Badge>
+            <div className="relative overflow-hidden rounded-[32px] border border-border">
+              {resolveAssetPath(selectedParent.attachmentUrl, "banners") ? (
+                <img
+                  src={resolveAssetPath(selectedParent.attachmentUrl, "banners") ?? ""}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              ) : null}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/15" />
+              <div className="relative flex min-h-[240px] flex-col justify-between gap-6 p-6 text-white md:p-8">
+                <div className="flex flex-wrap items-center gap-3">
+                  <Button
+                    variant="secondary"
+                    className="bg-white/90 text-slate-900 hover:bg-white"
+                    onClick={() => {
+                      setSelectedParentId(null);
+                      setSelectedChildId(null);
+                    }}
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    {t("action.backToCategories")}
+                  </Button>
+                  {selectedChild ? (
+                    <Button
+                      variant="secondary"
+                      className="bg-white/15 text-white hover:bg-white/25"
+                      onClick={() => setSelectedChildId(null)}
+                    >
+                      {selectedParent.name}
+                    </Button>
+                  ) : null}
+                </div>
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Badge variant="secondary" className="bg-white/90 text-slate-900">
+                      {(activeCategory ?? selectedParent).count} {t("nav.deals")}
+                    </Badge>
+                    {selectedChild ? (
+                      <Badge variant="secondary" className="bg-white/15 text-white">
+                        {selectedChild.name}
+                      </Badge>
+                    ) : null}
+                  </div>
+                  <h2 className="max-w-2xl text-3xl font-semibold md:text-4xl">
+                    {(activeCategory ?? selectedParent).name}
+                  </h2>
+                  <p className="max-w-2xl text-sm text-white/80 md:text-base">
+                    {selectedChild
+                      ? `Offers in ${selectedChild.name}`
+                      : `Browse ${selectedParent.name.toLowerCase()} offers by subcategory or see everything below.`}
+                  </p>
+                </div>
+              </div>
             </div>
+
+            {selectedParent.children.length > 0 ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="text-lg font-semibold">Subcategories</h3>
+                  {selectedChild ? (
+                    <Button variant="ghost" onClick={() => setSelectedChildId(null)}>
+                      Show all
+                    </Button>
+                  ) : null}
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                  {selectedParent.children.map(renderChildCard)}
+                </div>
+              </div>
+            ) : null}
 
             <DealFilters
               filters={categoryFilters}

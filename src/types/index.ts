@@ -49,6 +49,7 @@ export type Deal = {
   brand: string;
   categoryId?: string;
   category: DealCategory;
+  categoryName?: string;
   title: string;
   titleI18n?: {
     uz: string;
